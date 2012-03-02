@@ -18,10 +18,10 @@ Jeweler::Tasks.new do |gem|
   gem.homepage = "http://github.com/nerab/pwm"
   gem.license = "MIT"
   gem.summary = %Q{Command-line password manager}
-  gem.description = %Q{pwm is a command-line password manager}
+  gem.description = %Q{pwm is a secure password manager for the command-line}
   gem.email = "nerab@gmx.net"
   gem.authors = ["Nicholas E. Rabenau"]
-  # dependencies defined in Gemfile
+  gem.executables << 'pwm'
 end
 Jeweler::RubygemsDotOrgTasks.new
 
@@ -30,14 +30,6 @@ Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/test_*.rb'
   test.verbose = true
-end
-
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |test|
-  test.libs << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-  test.rcov_opts << '--exclude "gems/*"'
 end
 
 task :default => :test
