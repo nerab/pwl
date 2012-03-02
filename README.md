@@ -1,8 +1,7 @@
 pwm
 ===
 
-[![Build Status](https://secure.travis-ci.org/nerab/pwm.png)](http://travis-ci.org/nerab/pwm])
-
+[![Build Status](https://secure.travis-ci.org/nerab/pwm.png?branch=master)](http://travis-ci.org/nerab/pwm)
 
 Contributing to pwm
 ===================
