@@ -1,6 +1,8 @@
 pwm
 ===
 
+pwm is a secure password manager for the command-line
+
 [![Build Status](https://secure.travis-ci.org/nerab/pwm.png?branch=master)](http://travis-ci.org/nerab/pwm)
 
 Contributing to pwm
@@ -17,4 +19,3 @@ Contributing to pwm
 Copyright
 =========
 Copyright (c) 2012 Nicholas E. Rabenau. See LICENSE.txt for further details.
-
