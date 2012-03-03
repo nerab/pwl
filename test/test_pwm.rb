@@ -4,6 +4,7 @@ require 'tempfile'
 class TestPwm < Test::Unit::TestCase
   def setup
     @store_file = Tempfile.new(self.class.name)
+    Pwm::Store.init(@store_file.path, 's3cret') 
   end
 
   def teardown

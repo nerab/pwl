@@ -1,7 +1,92 @@
 #!/usr/bin/env ruby
 
-$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
-
 require 'rubygems'
+require 'commander/import'
 
-puts "TODO command suite"
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+require 'pwm'
+
+program :version, Pwm::VERSION
+program :description, "Command-line password manager. It's like Lastpass for the commandline."
+program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
+
+DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
+
+store_file = DEFAULT_STORE_FILE
+
+global_option '--verbose'
+global_option('-f', '--file FILE', 'Determine the file that holds the store.'){|file|
+  store_file = file
+}
+
+command :init do |c|
+  c.syntax = "#{program(:name)} init"
+  c.summary = 'Creates a new store'
+  c.description = 'This command creates a new password store. The master password will be read from STDIN. Empty passwords will not be accepted.'
+  c.example "Create a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
+  c.example "Create a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
+  c.action do |args, options|
+    raise "Cannot init an existing store." if File.exists?(store_file)
+    
+    begin
+      begin
+        master_password = password('Enter new master password:')
+      end while begin
+        validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
+      rescue StandardError => e
+        puts "Error: Master password #{$!}"
+        true
+      end
+  
+      raise "Error: Passwords do not match" if master_password != password('Enter master password again:')
+  
+      Pwm::Store.init(store_file, master_password)
+      STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
+    rescue Interrupt
+      STDERR.puts "Aborted." if options.verbose
+    end
+  end
+end
+
+command :get do |c|
+  c.syntax = "#{program(:name)} get KEY"
+  c.summary = 'Retrieves the value for KEY and prints it to STDOUT.'
+  c.description = 'This command retrieves the value stored under KEY and prints it on STDOUT.'
+  c.example 'Reads the value stored under the key "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
+  c.action do |args, options|
+    begin
+      puts Pwm::Store.new(store_file, password('Enter master password:')).get(args[0])
+    rescue Interrupt
+      STDERR.puts "Aborted." if options.verbose
+    end
+  end
+end
+
+command :put do |c|
+  c.syntax = "#{program(:name)} put KEY [VALUE]"
+  c.summary = 'Stores VALUE under KEY'
+  c.description = 'Adds or updates the entry stored under KEY. If KEY is already present in the store, it will be updated with VALUE. If KEY is not already present in the store, a new entry will be created. If VALUE is not given, it will be read from STDIN.'
+  c.example 'Stores the value "bar" under the key "foo"', "#{program(:name)} #{c.name} foo bar"
+  c.example 'Reads STDIN and stores that as value under the key "foo"', "#{program(:name)} #{c.name} foo"
+  c.action do |args, options|
+    raise "KEY is required" if 0 == args.size
+    value = args[1] || ask("Enter value for key '#{args[0]}':")
+    
+    begin
+      Pwm::Store.new(store_file, password('Enter master password:')).put(args[0], value)
+      STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
+    rescue Interrupt
+      STDERR.puts "Aborted." if options.verbose
+    end
+  end
+end
+
+def validate!(pwd)
+  # Validations go from simple to more complicated
+  raise "may not be blank" if pwd.empty?
+  raise "must have at least eight characters" if 8 > pwd.length
+  raise "must contain at least one integer" unless pwd =~ /.*\d/
+  raise "at least one character either (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
+  raise "special characters are only allowed if ASCII values 20 to 7E" unless pwd =~ /[\x20-\x7E]/
+  raise "minimum length of of 8 characters" unless pwd =~ /^(?=.*\d)(?=.*([a-z]|[A-Z]))([\x20-\x7E]){8}$/  
+end

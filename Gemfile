@@ -4,6 +4,8 @@ source "http://rubygems.org"
 #   gem "activesupport", ">= 2.3.5"
 
 gem 'encryptor'
+gem 'commander'
+gem 'activesupport'
 
 group :test do
   gem "rake"
