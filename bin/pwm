@@ -26,7 +26,7 @@ command :init do |c|
   c.example "Create a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
   c.example "Create a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.action do |args, options|
-    raise "Cannot init an existing store." if File.exists?(store_file)
+    raise "Cannot init an existing store" if File.exists?(store_file) # Store checks this too, but we want to fail fast.
     
     begin
       begin
@@ -54,6 +54,8 @@ command :get do |c|
   c.description = 'This command retrieves the value stored under KEY and prints it on STDOUT.'
   c.example 'Reads the value stored under the key "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
+    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
+    
     begin
       puts Pwm::Store.new(store_file, password('Enter master password:')).get(args[0])
     rescue Interrupt
@@ -69,7 +71,9 @@ command :put do |c|
   c.example 'Stores the value "bar" under the key "foo"', "#{program(:name)} #{c.name} foo bar"
   c.example 'Reads STDIN and stores that as value under the key "foo"', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
+    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
     raise "KEY is required" if 0 == args.size
+    
     value = args[1] || ask("Enter value for key '#{args[0]}':")
     
     begin

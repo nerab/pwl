@@ -1,3 +1,5 @@
+1. Configure HighLine to print to STDERR so that we don't pipe the prompt into the result.
+
 1. `pwm delete KEY`
 
     Deletes the entry stored under KEY.

@@ -4,25 +4,25 @@ module Pwm
   class Store
     class AlreadyExistsError < StandardError
       def initialize(file)
-        super("The file #{file} already exists.")
+        super("The file #{file} already exists")
       end
     end
     
     class NotInitializedError < StandardError
       def initialize(file)
-        super("The store at #{file} was not initialized yet.")
+        super("The store at #{file} was not initialized yet")
       end
     end
     
     class WrongMasterPasswordError < StandardError
       def initialize
-        super("The master password is wrong.")
+        super("The master password is wrong")
       end
     end
     
     class FileNotFoundError < StandardError
       def initialize(file)
-        super("The file #{file} for the store was not found.")
+        super("The file #{file} for the store was not found")
       end
     end
     
@@ -51,12 +51,10 @@ module Pwm
     end
     
     #
-    # The whole init stuff isn't quite right yet.
-    # I would like to prevent storing stuff under different passwords, so we need ensure the store is always opened with the right password.
-    # But then, how can we prevent brute-force attacks?
+    # We need ensure the store is always opened with the right password. But how can we prevent brute-force attacks?
     # Maybe we could have a test entry that is encrypted at init time. The test for the correct password would then be that we can successfully
     # decrypt that key. The creation date seems right, maybe plus some salt so that we don't give both the encrypted as well as the unencrypted
-    # value away. Prereq would be that decrypt tells whether it was successful if the password was wrong.
+    # value away. Prereq is that decrypt tells whether it failed to decrypt some value if the password was wrong.
     #
     class << self
       def init(file, master_password)
