@@ -49,8 +49,13 @@ module Pwm
         super("Value")
       end
     end
-    
+
     class << self
+      # TODO Maybe this really is the constructor, and what is now in initialize(file, master_password) is actually Store.open
+      #
+      # Store.new(...) would construct a new store (not only the object, but also the file behind it). It throws when the file already exists.
+      # Store.open(...) would open an existing store. It throws if the file does not exist or isn't initialized.
+      #
       def init(file, master_password, options = {})
         raise FileAlreadyExistsError.new(file) if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file 
         

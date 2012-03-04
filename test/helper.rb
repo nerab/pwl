@@ -20,20 +20,28 @@ end
 module Test
   module Pwm
     class TestCase < Test::Unit::TestCase
-      attr_reader :store_file
+      attr_reader :store, :store_file
 
       def setup
-        @store_file = Tempfile.new(self.class.name)
-        ::Pwm::Store.init(@store_file.path, store_password, :force => true) 
+        @store_file = temp_file_name
+        ::Pwm::Store.init(@store_file, store_password, :force => true) 
+        @store = ::Pwm::Store.new(@store_file, store_password)
       end
 
       def teardown
-        @store_file.close
-        @store_file.unlink
+        File.unlink(@store_file)
       end
   
       def store_password
         's3cret'
+      end
+
+      # Make up a name of a file that does not exist in ENV['TMPDIR'] yet
+      def temp_file_name
+        begin
+          result = File.join(ENV['TMPDIR'], "#{self.class.name}-#{Random.rand}.pstore")
+        end while File.exists?(result)
+        result
       end
     end
 
@@ -57,7 +65,7 @@ module Test
       end
   
       def execute(cmd)
-        Open3.capture3("echo #{store_password} | #{APP} #{cmd} --file #{store_file.path}")
+        Open3.capture3("echo #{store_password} | #{APP} #{cmd} --file #{store_file}")
       end
     end
   end
