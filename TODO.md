@@ -1,5 +1,3 @@
-1. Don't use HighLine if we are called from a pipe in order to not pollute the output.
-
 1. `pwm list PATTERN`
 
     Lists entries that have a key matching PATTERN.

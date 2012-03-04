@@ -1,5 +1,4 @@
 require 'helper'
-require 'tempfile'
 
 class TestStore < Test::Pwm::TestCase
   def test_open_save

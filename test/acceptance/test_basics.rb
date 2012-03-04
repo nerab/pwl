@@ -12,12 +12,4 @@ class TestBasics < Test::Pwm::AppTestCase
   def test_unknown_command
     assert_error('invalid', 'foobar')
   end
-  
-  def test_get_unknown_key
-    
-  end
-  
-  def test_get_known_key
-    
-  end
 end

@@ -7,39 +7,40 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'pwm'
 
 program :version, Pwm::VERSION
-program :description, "Command-line password manager. It's like Lastpass for the commandline."
+program :description, "#{program(:name)} is a secure password manager for the commandline"
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
 
 store_file = DEFAULT_STORE_FILE
 
-global_option '--verbose'
-global_option('-f', '--file FILE', 'Determine the file that holds the store.'){|file|
+global_option '-V', '--verbose', 'Enable verbose output'
+global_option('-f', '--file FILE', 'Determine the file that holds the store'){|file|
   store_file = file
 }
 
 command :init do |c|
   c.syntax = "#{program(:name)} init"
-  c.summary = 'Creates a new store'
-  c.description = 'This command creates a new password store. The master password will be read from STDIN. Empty passwords will not be accepted.'
-  c.example "Create a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
-  c.example "Create a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
+  c.summary = 'Initializes a new store'
+  c.description = 'This command initializes a new password store. The master password will be read from STDIN. Empty passwords will not be accepted.'
+  c.example "Initializes a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
+  c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.action do |args, options|
     raise "Cannot init an existing store" if File.exists?(store_file) # Store checks this too, but we want to fail fast.
     
     begin
       begin
-        master_password = password('Enter new master password:')
+        master_password = get_password('Enter new master password:')
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue StandardError => e
         puts "Error: Master password #{$!}"
         true
       end
-  
-      raise "Error: Passwords do not match" if master_password != password('Enter master password again:')
-  
+
+      # Ask for password confimation if running in interactive mode (terminal)
+      raise "Error: Passwords do not match" if STDIN.tty? && master_password != password('Enter master password again:')
+
       Pwm::Store.init(store_file, master_password)
       STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
     rescue Interrupt
@@ -58,7 +59,7 @@ command :get do |c|
     raise "KEY may not be blank" if args[0].blank?
     
     begin
-      puts Pwm::Store.new(store_file, password('Enter master password:')).get(args[0])
+      puts Pwm::Store.new(store_file, get_password('Enter master password:')).get(args[0])
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
     end
@@ -75,15 +76,25 @@ command :put do |c|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
     raise "KEY is required" if 0 == args.size
     
-    value = args[1] || ask("Enter value for key '#{args[0]}':")
+    # TODO Ask for the master password _before_ asking the the value in a terminal
+    value = args[1]
+
+    if !value
+      raise "VALUE is required" unless STDIN.tty?
+      value = ask("Enter value for key '#{args[0]}':")
+    end
     
     begin
-      Pwm::Store.new(store_file, password('Enter master password:')).put(args[0], value)
+      Pwm::Store.new(store_file, get_password('Enter master password:')).put(args[0], value)
       STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
     end
   end
+end
+
+def get_password(prompt)
+  STDIN.tty? ? password(prompt) : STDIN.read.chomp
 end
 
 def validate!(pwd)

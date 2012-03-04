@@ -12,6 +12,7 @@ require 'test/unit'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'pwm'
+require 'tempfile'
 
 class Test::Unit::TestCase
 end
@@ -43,20 +44,20 @@ module Test
       
       def assert_successful(expected_out, cmd)
         out, err, rc = execute(cmd)
-        assert_equal(0, rc.exitstatus)
-        assert(err.empty?)
-        assert(out =~ /#{expected_out}/)
+        assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}")
+        assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
+        assert(out =~ /#{expected_out}/, "'#{out}' did not match expected response '#{expected_out}'")
       end
   
       def assert_error(expected_err, cmd)
         out, err, rc = execute(cmd)
-        assert_equal(1, rc.exitstatus)
-        assert(out.empty?)
-        assert(err =~ /#{expected_err}/)
+        assert_equal(1, rc.exitstatus, "Expected exit status 1, but it was #{rc.exitstatus}")
+        assert(out.empty?, "Expected empty STDOUT, but it yielded #{out}")
+        assert(err =~ /#{expected_err}/, "'#{err}' did not match expected response '#{expected_err}'")
       end
   
       def execute(cmd)
-        Open3.capture3("#{APP} #{cmd}")
+        Open3.capture3("echo #{store_password} | #{APP} #{cmd} --file #{store_file.path}")
       end
     end
   end
