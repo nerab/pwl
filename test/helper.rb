@@ -38,7 +38,7 @@ module Test
       # Make up a name of a file that does not exist in ENV['TMPDIR'] yet
       def temp_file_name
         begin
-          result = File.join(ENV['TMPDIR'], "#{self.class.name}-#{Random.rand}.pstore")
+          result = File.join(ENV['TMPDIR'] || '', "#{self.class.name}-#{Random.rand}.pstore")
         end while File.exists?(result)
         result
       end
