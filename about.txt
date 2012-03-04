@@ -1,0 +1,36 @@
+  [1mNAME[0m:
+
+    pwm
+
+  [1mDESCRIPTION[0m:
+
+    pwm is a secure password manager for the commandline
+
+  [1mCOMMANDS[0m:
+	
+    get                  Retrieves the value for KEY and prints it to STDOUT.		
+    help                 Display global or [command] help documentation.		
+    init                 Initializes a new store		
+    put                  Stores VALUE under KEY	
+
+  [1mGLOBAL OPTIONS[0m:
+	
+    -V, --verbose 
+        Enable verbose output
+	
+    -f, --file FILE 
+        Determine the file that holds the store
+	
+    -h, --help 
+        Display help documentation
+	
+    -v, --version 
+        Display version information
+	
+    -t, --trace 
+        Display backtrace when an error occurs
+	  
+  [1mAUTHOR[0m:
+
+    Nicholas E. Rabenau <nerab@gmx.at>
+  
