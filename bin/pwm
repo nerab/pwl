@@ -55,6 +55,7 @@ command :get do |c|
   c.example 'Reads the value stored under the key "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
+    raise "KEY may not be blank" if args[0].blank?
     
     begin
       puts Pwm::Store.new(store_file, password('Enter master password:')).get(args[0])

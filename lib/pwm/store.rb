@@ -2,7 +2,7 @@ require 'date'
 
 module Pwm
   class Store
-    class AlreadyExistsError < StandardError
+    class FileAlreadyExistsError < StandardError
       def initialize(file)
         super("The file #{file} already exists")
       end
@@ -50,15 +50,10 @@ module Pwm
       end
     end
     
-    #
-    # We need ensure the store is always opened with the right password. But how can we prevent brute-force attacks?
-    # Maybe we could have a test entry that is encrypted at init time. The test for the correct password would then be that we can successfully
-    # decrypt that key. The creation date seems right, maybe plus some salt so that we don't give both the encrypted as well as the unencrypted
-    # value away. Prereq is that decrypt tells whether it failed to decrypt some value if the password was wrong.
-    #
     class << self
       def init(file, master_password, options = {})
-        raise AlreadyExistsError.new(file) if File.exists?(file) && !options[:force] # force is mainly required for tests, but may be useful in the app, too
+        raise FileAlreadyExistsError.new(file) if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file 
+        
         Encryptor.default_options.merge!(:key => master_password)
         backend = PStore.new(file)
         backend.transaction{

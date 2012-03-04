@@ -25,4 +25,21 @@ class TestStore < Test::Pwm::TestCase
       Pwm::Store.new(@store_file.path, 'secr3t')
     end
   end
+  
+  def test_existing_store
+    assert_raise Pwm::Store::FileAlreadyExistsError do
+      ::Pwm::Store.init(store_file.path, store_password)
+    end
+  end
+  
+  def test_nonexisting_store
+    # make up name of a temp file that does not exist yet
+    begin
+      temp_file_name = "#{ENV['TMPDIR']}-#{Random.rand(10E9)}.pstore"
+    end while File.exists?(temp_file_name)
+    
+    assert_raise Pwm::Store::FileNotFoundError do
+      Pwm::Store.new(temp_file_name, 's3cret passw0rd')
+    end
+  end
 end

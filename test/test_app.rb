@@ -8,11 +8,19 @@ class TestApp < Test::Pwm::TestCase
   end
 
   def test_no_args
-    assert_error('', '')
+    assert_error('invalid', '')
   end
 
   def test_unknown_command
     assert_error('invalid', 'foobar')
+  end
+  
+  def test_get_unknown_key
+    
+  end
+  
+  def test_get_known_key
+    
   end
   
   private
