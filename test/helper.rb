@@ -35,5 +35,29 @@ module Test
         's3cret'
       end
     end
+
+    class AppTestCase < TestCase
+      APP = 'bin/pwm'
+
+      protected
+      
+      def assert_successful(expected_out, cmd)
+        out, err, rc = execute(cmd)
+        assert_equal(0, rc.exitstatus)
+        assert(err.empty?)
+        assert(out =~ /#{expected_out}/)
+      end
+  
+      def assert_error(expected_err, cmd)
+        out, err, rc = execute(cmd)
+        assert_equal(1, rc.exitstatus)
+        assert(out.empty?)
+        assert(err =~ /#{expected_err}/)
+      end
+  
+      def execute(cmd)
+        Open3.capture3("#{APP} #{cmd}")
+      end
+    end
   end
 end
