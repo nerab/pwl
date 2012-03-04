@@ -1,4 +1,8 @@
-1. Configure HighLine to print to STDERR so that we don't pipe the prompt into the result.
+1. Don't use HighLine if we are called from a pipe in order to not pollute the output.
+
+1. `pwm list PATTERN`
+
+    Lists entries that have a key matching PATTERN.
 
 1. `pwm delete KEY`
 
