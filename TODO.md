@@ -10,7 +10,9 @@
     
     Changes the master password to `NEW_MASTER_PASSWORD`. If `NEW_MASTER_PASSWORD` is not present, it will be read from STDIN.
 
-1. Ticket system (with global option --ttl INTEGER)
+1.  Like sudo, pwm could become less annoying and ask rather seldom for the master password. After pwm was successfully unlocked, a ticket is granted for 5 minutes (this timeout is configurable). Each subsequent pwm command updates the ticket for another 5 minutes. This avoids the problem of leaving a shell where others can physically get to your keyboard.
+
+1. Global option --ttl INTEGER
 
     Time to live for the authentication ticket.
     Pass in 0 to disable authentication tickets. In this case, pwm will ask for the master password for every invocation.
