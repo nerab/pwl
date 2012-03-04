@@ -57,8 +57,8 @@ module Pwm
     # value away. Prereq is that decrypt tells whether it failed to decrypt some value if the password was wrong.
     #
     class << self
-      def init(file, master_password)
-        raise AlreadyExistsError.new(file) if File.exists?(file)
+      def init(file, master_password, options = {})
+        raise AlreadyExistsError.new(file) if File.exists?(file) && !options[:force] # force is mainly required for tests, but may be useful in the app, too
         Encryptor.default_options.merge!(:key => master_password)
         backend = PStore.new(file)
         backend.transaction{
