@@ -51,44 +51,79 @@ module Pwm
     end
 
     class << self
-      # TODO Maybe this really is the constructor, and what is now in initialize(file, master_password) is actually Store.open
+      alias_method :load, :new
+
       #
-      # Store.new(...) would construct a new store (not only the object, but also the file behind it). It throws when the file already exists.
-      # Store.open(...) would open an existing store. It throws if the file does not exist or isn't initialized.
+      # Constructs a new store (not only the object, but also the file behind it).
       #
-      def init(file, master_password, options = {})
-        raise FileAlreadyExistsError.new(file) if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file 
+      # Store.new(file, master_password, options)
+      #   file.exists?
+      #     true:
+      #       options[:force]
+      #         true:
+      #           load
+      #           reset!
+      #         false:
+      #           raise FileAlreadyExistsError
+      #     no:
+      #       load
+      #       reset!
+      def new(file, master_password, options = {})
+        if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file
+          raise FileAlreadyExistsError.new(file)
+        else
+          store = load(file, master_password)
+          store.reset!
+        end
         
-        Encryptor.default_options.merge!(:key => master_password)
-        backend = PStore.new(file)
-        backend.transaction{
-          backend[:user] = {} 
-          backend[:system] = {}
-          backend[:system][:created] = "#{Random.rand}-#{DateTime.now.to_s}".encrypt
-        }
+        store
       end
       
-      def initialized?(file)
+      #
+      # Opens an existing store. Throws if the backing file does not exist or isn't initialized.
+      #
+      # Store.open(file, master_password)
+      #   file.exists?
+      #     true:
+      #       load
+      #       authenticate
+      #     false:
+      #       raise FileNotFoundError
+      #
+      def open(file, master_password)
         raise FileNotFoundError.new(file) unless File.exists?(file)
-        backend = PStore.new(file)
-        backend.transaction(true){
-          backend[:user] && backend[:system] 
-        }
+        store = load(file, master_password)
+        store.authenticate # do not allow openeing without successful authentication
+        store
       end
     end
     
+    #
+    # Beware: New is overridden
+    #
     def initialize(file, master_password)
-      raise NotInitializedError.new(file) unless Store.initialized?(file)
-      Encryptor.default_options.merge!(:key => master_password)
       @backend = PStore.new(file)
-      
+      Encryptor.default_options.merge!(:key => master_password)
+    end
+
+    def reset!
+      @backend.transaction{
+        @backend[:user] = {} 
+        @backend[:system] = {}
+        @backend[:system][:created] = "#{Random.rand}-#{DateTime.now.to_s}".encrypt
+      }
+    end
+
+    def authenticate
       begin
-        @backend.transaction(true){@backend[:system][:created]}.decrypt
+        @backend.transaction(true){
+          @backend[:user] && @backend[:system] && @backend[:system][:created] && @backend[:system][:created].decrypt
+        }
       rescue OpenSSL::Cipher::CipherError
         raise WrongMasterPasswordError
       end
     end
-    
+
     def get(key)
       raise BlankKeyError if key.blank?
       @backend.transaction{

@@ -41,7 +41,7 @@ command :init do |c|
       # Ask for password confimation if running in interactive mode (terminal)
       raise "Error: Passwords do not match" if STDIN.tty? && master_password != password('Enter master password again:')
 
-      Pwm::Store.init(store_file, master_password)
+      Pwm::Store.new(store_file, master_password)
       STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
@@ -59,7 +59,7 @@ command :get do |c|
     raise "KEY may not be blank" if args[0].blank?
     
     begin
-      puts Pwm::Store.new(store_file, get_password('Enter master password:')).get(args[0])
+      puts Pwm::Store.open(store_file, get_password('Enter master password:')).get(args[0])
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
     end
@@ -85,7 +85,7 @@ command :put do |c|
     end
     
     begin
-      Pwm::Store.new(store_file, get_password('Enter master password:')).put(args[0], value)
+      Pwm::Store.open(store_file, get_password('Enter master password:')).put(args[0], value)
       STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose

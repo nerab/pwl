@@ -24,8 +24,7 @@ module Test
 
       def setup
         @store_file = temp_file_name
-        ::Pwm::Store.init(@store_file, store_password, :force => true) 
-        @store = ::Pwm::Store.new(@store_file, store_password)
+        @store = ::Pwm::Store.new(@store_file, store_password) 
       end
 
       def teardown

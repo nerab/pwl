@@ -19,19 +19,19 @@ class TestStore < Test::Pwm::TestCase
   
   def test_wrong_password
     assert_raise Pwm::Store::WrongMasterPasswordError do
-      Pwm::Store.new(store_file, 'secr3t')
+      Pwm::Store.open(store_file, 'secr3t')
     end
   end
   
   def test_existing_store
     assert_raise Pwm::Store::FileAlreadyExistsError do
-      ::Pwm::Store.init(store_file, store_password)
+      ::Pwm::Store.new(store_file, store_password)
     end
   end
   
   def test_nonexisting_store
     assert_raise Pwm::Store::FileNotFoundError do
-      Pwm::Store.new(temp_file_name, 's3cret passw0rd')
+      Pwm::Store.open(temp_file_name, 's3cret passw0rd')
     end
   end
   
