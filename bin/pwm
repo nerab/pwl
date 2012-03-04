@@ -76,7 +76,14 @@ command :put do |c|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
     raise "KEY is required" if 0 == args.size
     
-    # TODO Ask for the master password _before_ asking the the value in a terminal
+    # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
+    begin
+      store = Pwm::Store.open(store_file, get_password('Enter master password:'))
+    rescue Interrupt
+      STDERR.puts "Aborted." if options.verbose
+      exit 1
+    end
+    
     value = args[1]
 
     if !value
@@ -84,12 +91,8 @@ command :put do |c|
       value = ask("Enter value for key '#{args[0]}':")
     end
     
-    begin
-      Pwm::Store.open(store_file, get_password('Enter master password:')).put(args[0], value)
-      STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
-    rescue Interrupt
-      STDERR.puts "Aborted." if options.verbose
-    end
+    store.put(args[0], value)
+    STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
   end
 end
 
