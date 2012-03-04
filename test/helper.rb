@@ -12,7 +12,7 @@ require 'test/unit'
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'pwm'
-require 'tempfile'
+require 'tmpdir'
 
 class Test::Unit::TestCase
 end
@@ -38,7 +38,7 @@ module Test
       # Make up a name of a file that does not exist in ENV['TMPDIR'] yet
       def temp_file_name
         begin
-          result = File.join(ENV['TMPDIR'] || '', "#{self.class.name}-#{Random.rand}.pstore")
+          result = File.join(ENV['TMPDIR'] || Dir.tmpdir, "#{self.class.name}-#{Random.rand}.pstore")
         end while File.exists?(result)
         result
       end
