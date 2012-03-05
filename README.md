@@ -1,13 +1,13 @@
-pwm
+`pwm`
 ===
 
-`pwm` is a secure password manager for the command-line
+`pwm` is a secure password manager for the command-line.
 
 [![Build Status](https://secure.travis-ci.org/nerab/pwm.png?branch=master)](http://travis-ci.org/nerab/pwm)
 
 Concept
 =======
-`pwm` is written in the UNIX tradition of having a tool do one thing, and do it well. With this in mind, password management becomes not much more than keeping a list of key-value pairs and securing it from unauthorized access (usually done by encrypting the password database with a master key).
+`pwm` is written in the UNIX tradition of having a tool do one thing, and do it well. With this in mind, password management becomes not much more than keeping a list of key-value pairs and securing it from unauthorized access (by encrypting the password database with a master key).
 
 The whole topic becomes much more interesting when you start integrating a password manager into various tools and applications. There is no widely accepted standard for how password managers could hook into applications, and so almost every tool falls back to the system clipboard. Notable exceptions are modern browsers, which provide password manager integration by their generic plugin concepts.
 
@@ -17,6 +17,10 @@ The whole topic becomes much more interesting when you start integrating a passw
   * All regular output (e.g. the password retrieved) goes to STDOUT
   * All messages and errors are printed to STDERR  (prevents side effects of the message)
   * Exit code is set to 0 for success and non-zero for errors
+
+Security
+========
+When it comes to securing passwords, `pwm` does not make compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All keys and values are individually encrypted with the master key.
 
 Integration
 ===========
@@ -38,7 +42,7 @@ Instead of just printing to the console, the output of `pwm` can be used as inpu
 
 
 Contributing to `pwm`
-===================
+=====================
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.

@@ -6,7 +6,7 @@ class TestStoreSecurity < Test::Pwm::TestCase
     store.put('foo', 'bar')
     raw = PStore.new(store_file)
     assert_not_equal('bar', raw.transaction{raw[:user]['foo']})
-    assert_not_nil(raw.transaction{raw[:user]['foo']})
+    assert_nil(raw.transaction{raw[:user]['foo']}) # must not find cleartext entry
   end
 
   def test_wrong_password

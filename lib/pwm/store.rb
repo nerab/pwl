@@ -131,7 +131,7 @@ module Pwm
       raise BlankKeyError if key.blank?
       @backend.transaction{
         timestamp!(:last_accessed)
-        value = @backend[:user][key]
+        value = @backend[:user][key.encrypt]
         raise KeyNotFoundError.new(key) unless value
         value.decrypt
       }
@@ -142,13 +142,13 @@ module Pwm
       raise BlankValueError if value.blank?
       @backend.transaction{
         timestamp!(:last_modified)
-        @backend[:user][key] = value.encrypt
+        @backend[:user][key.encrypt] = value.encrypt
       }
     end
 
     def list(filter = nil)
       @backend.transaction(true){
-        result = @backend[:user].keys
+        result = @backend[:user].keys.collect{|k| k.decrypt}
 
         if filter.blank?
           result
