@@ -148,7 +148,13 @@ module Pwm
 
     def list(filter = nil)
       @backend.transaction(true){
-        @backend[:user].keys
+        result = @backend[:user].keys
+
+        if filter.blank?
+          result
+        else
+          result.select{|k,v| k =~ /#{filter}/}
+        end
       }
     end
 

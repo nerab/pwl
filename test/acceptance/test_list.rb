@@ -23,6 +23,7 @@ class TestList < Test::Pwm::AppTestCase
     }
 
     filter = 'foo'
-    assert_successful(test_vector.keys.select{|k,v| k =~ /#{filter}/}.join(','), "list #{filter} -s ,")
+    expected = test_vector.keys.select{|k,v| k =~ /#{filter}/}.join(',')
+    assert_successful("^#{expected}$", "list #{filter} -s ,")
   end
 end
