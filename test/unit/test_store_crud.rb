@@ -31,4 +31,17 @@ class TestStoreCRUD < Test::Pwm::TestCase
       store.get('foo')
     end
   end
+
+  def test_list_empty
+    assert_empty(store.list)
+  end
+
+  def test_list
+    test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
+    test_vector.each{|k,v| store.put(k, v)}
+    assert_equal(test_vector.keys, store.list)
+    store.list.each{|key|
+      assert_equal(test_vector[key], store.get(key))
+    }
+  end
 end

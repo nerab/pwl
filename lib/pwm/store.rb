@@ -7,43 +7,43 @@ module Pwm
         super("The file #{file} already exists")
       end
     end
-    
+
     class NotInitializedError < StandardError
       def initialize(file)
         super("The store at #{file} was not initialized yet")
       end
     end
-    
+
     class WrongMasterPasswordError < StandardError
       def initialize
         super("The master password is wrong")
       end
     end
-    
+
     class FileNotFoundError < StandardError
       def initialize(file)
         super("The file #{file} for the store was not found")
       end
     end
-    
+
     class KeyNotFoundError < StandardError
       def initialize(key)
         super("No entry was found for #{key}")
       end
     end
-    
+
     class BlankError < StandardError
       def initialize(what)
         super("#{what} is required")
       end
     end
-    
+
     class BlankKeyError < BlankError
       def initialize
         super("Key")
       end
     end
-    
+
     class BlankValueError < BlankError
       def initialize
         super("Value")
@@ -75,10 +75,10 @@ module Pwm
           store = load(file, master_password)
           store.reset!
         end
-        
+
         store
       end
-      
+
       #
       # Opens an existing store. Throws if the backing file does not exist or isn't initialized.
       #
@@ -97,7 +97,7 @@ module Pwm
         store
       end
     end
-    
+
     #
     # Beware: New is overridden
     #
@@ -108,7 +108,7 @@ module Pwm
 
     def reset!
       @backend.transaction{
-        @backend[:user] = {} 
+        @backend[:user] = {}
         @backend[:system] = {}
         @backend[:system][:created] = "#{Random.rand}-#{DateTime.now.to_s}".encrypt
       }
@@ -133,7 +133,7 @@ module Pwm
         value.decrypt
       }
     end
-    
+
     def put(key, value)
       raise BlankKeyError if key.blank?
       raise BlankValueError if value.blank?
@@ -142,20 +142,26 @@ module Pwm
         @backend[:user][key] = value.encrypt
       }
     end
-    
+
+    def list
+      @backend.transaction(true){
+        @backend[:user].keys
+      }
+    end
+
     def last_accessed
       @backend.transaction(true){timestamp(:last_accessed)}
     end
-    
+
     def last_modified
       @backend.transaction(true){timestamp(:last_modified)}
     end
-    
+
     private
     def timestamp(sym)
       @backend[:system][sym]
     end
-    
+
     def timestamp!(sym)
       @backend[:system][sym] = DateTime.now
     end
