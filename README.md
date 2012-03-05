@@ -20,13 +20,11 @@ pwm focuses on the command line where standard input (STDIN) and output (STDOUT)
 
 Security
 ========
-When it comes to securing passwords, pwm does not make compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All keys and values are individually encrypted with the master key.
+When it comes to securing passwords, pwm does not make any compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All keys and values are individually encrypted with the master key.
 
 Integration
 ===========
 When invoked on a console, pwm will ask for the master password to be typed into the console (using the [HighLine](http://highline.rubyforge.org) library).
-
-It is also possible to ask for 
 
 The master password can also be provided more conveniently with a GUI tool. pwm will read the master password from STDIN when running in a pipe. On Linux, [gdialog](http://linux.about.com/library/cmd/blcmdl1_gdialog.htm) or [kdialog](http://techbase.kde.org/Development/Tutorials/Shell_Scripting_with_KDE_Dialogs#Example_1:_Password_Dialog) or [Zenity](http://live.gnome.org/Zenity) could be used for that.
 
