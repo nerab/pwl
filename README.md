@@ -24,24 +24,31 @@ When it comes to securing passwords, pwm does not make compromises. It relies on
 
 Integration
 ===========
-pwm will read the master password from STDIN when running in a pipe. Therefore you can ask for the master password with a GUI tool instead of using the console input.
+When invoked on a console, pwm will ask for the master password to be typed into the console (using the [HighLine](http://highline.rubyforge.org) library).
 
-* On Linux, [gdialog](http://linux.about.com/library/cmd/blcmdl1_gdialog.htm) or [kdialog](http://techbase.kde.org/Development/Tutorials/Shell_Scripting_with_KDE_Dialogs#Example_1:_Password_Dialog) or [Zenity](http://live.gnome.org/Zenity) could be used.
+It is also possible to ask for 
 
-      Example for Zenity:
+The master password can also be provided more conveniently with a GUI tool. pwm will read the master password from STDIN when running in a pipe. On Linux, [gdialog](http://linux.about.com/library/cmd/blcmdl1_gdialog.htm) or [kdialog](http://techbase.kde.org/Development/Tutorials/Shell_Scripting_with_KDE_Dialogs#Example_1:_Password_Dialog) or [Zenity](http://live.gnome.org/Zenity) could be used for that.
 
-          zenity --entry --hide-text --text "Please enter the master password:" --title pwm | pwm get nerab@github.com
+Example for Zenity:
 
-* On the Mac, [CocoaDialog](http://mstratman.github.com/cocoadialog/) or [Pashua](http://www.bluem.net/en/mac/pashua/) could be used. If you have CocoaDialog installed, the following snippet will work on MacOS:
+    zenity --entry --hide-text --text "Please enter the master password:" --title pwm | pwm get nerab@example.com
 
-          /Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog secure-standard-inputbox --title pwm --informative-text "Please enter the master password:" | ruby -e "r = ARGF.read.split; puts r[1] if r[0] == '1'" | pwm get nerab@github.com
+On the Mac, [CocoaDialog](http://mstratman.github.com/cocoadialog/) or [Pashua](http://www.bluem.net/en/mac/pashua/) could be used. If you have CocoaDialog installed, the following snippet will work on MacOS:
 
-      This line is a little more involved because CocoaDialog returns two lines of output; first the number of the button that was pressed, and second the actual user input.
+    /Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog secure-standard-inputbox --title pwm --informative-text "Please enter the master password:" | ruby -e "r = ARGF.read.split; puts r[1] if r[0] == '1'" | pwm get nerab@example.com
 
-These commands will request the pwm master password using a GUI dialog. The result is piped into pwm, which will in turn print the password that is stored under nerab@github.com.
+This line is a little more involved because CocoaDialog returns two lines of output; first the number of the button that was pressed, and second the actual user input.
 
-Instead of just printing to the console, the output of pwm can be used as input for other programs. For instance, the popular request for copying a password to the clipboard can be achieved by piping pwm's output into a clipboard application that reads from STDIN, e.g. pbcopy (Mac), xclip (Linux), clip (Windows >= Vista), putclip (cygwin).
+Both commands will request the pwm master password using a GUI dialog and pipe it into pwm, which will in turn print the password stored under nerab@example.com to the console.
 
+Instead of pwm printing the password to the console, the output can be used as input for yet other programs. For instance, the popular request for copying a password to the clipboard can be achieved by piping pwm's output into a clipboard application that reads from STDIN, e.g. pbcopy (Mac), xclip (Linux), clip (Windows >= Vista), putclip (cygwin).
+
+On the Mac this command would become as crazy as:
+
+    /Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog secure-standard-inputbox --title pwm --informative-text "Please enter the master password:" | ruby -e "r = ARGF.read.split; puts r[1] if r[0] == '1'" | pwm get nerab@example.com | pbcopy
+
+Calling this line, the password stored under nerab@example.com is copied to the clipboard.
 
 Contributing to pwm
 ===================
