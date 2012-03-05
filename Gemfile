@@ -9,6 +9,7 @@ gem 'activesupport'
 
 group :test do
   gem "rake"
+  gem 'simplecov', :require => false
 end
 
 # Add dependencies to develop your gem here.
