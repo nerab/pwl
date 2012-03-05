@@ -25,8 +25,11 @@ command :init do |c|
   c.description = 'This command initializes a new password store. The master password will be read from STDIN. Empty passwords will not be accepted.'
   c.example "Initializes a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
   c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
+  c.option '--force', 'Force-overwrite an existing store file'
   c.action do |args, options|
-    raise "Cannot init an existing store" if File.exists?(store_file) # Store checks this too, but we want to fail fast.
+    if File.exists?(store_file) && !options.force # Store checks this too, but we want to fail fast.
+      raise "There already exists a store at #{store_file}. Use --force to overwrite it or pass --file to specify a different store"
+    end
 
     begin
       begin
@@ -41,7 +44,7 @@ command :init do |c|
       # Ask for password confimation if running in interactive mode (terminal)
       raise "Error: Passwords do not match" if STDIN.tty? && master_password != password('Enter master password again:')
 
-      Pwm::Store.new(store_file, master_password)
+      Pwm::Store.new(store_file, master_password, {:force => options.force})
       STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
@@ -60,6 +63,26 @@ command :get do |c|
 
     begin
       puts Pwm::Store.open(store_file, get_password('Enter master password:')).get(args[0])
+    rescue Interrupt
+      STDERR.puts "Aborted." if options.verbose
+    end
+  end
+end
+
+command :list do |c|
+  c.syntax = "#{program(:name)} list [FILTER]"
+  c.summary = 'Lists all keys with optional FILTER.'
+  c.description = 'This command prints all keys to STDOUT. If present, only those keys matching FILTER will be returned.'
+  c.example 'Prints all keys', "#{program(:name)} #{c.name}"
+  c.example 'Prints all keys which start with "foo"', "#{program(:name)} #{c.name} foo"
+  c.example 'Prints all keys separated by comma', "#{program(:name)} #{c.name} --separator ,"
+  c.option '-s', '--separator SEPARATOR', String, 'Separate keys by SEPARATOR'
+  c.action do |args, options|
+    options.default :separator => ' '
+    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
+
+    begin
+      puts Pwm::Store.open(store_file, get_password('Enter master password:')).list(args[0]).join(options.separator)
     rescue Interrupt
       STDERR.puts "Aborted." if options.verbose
     end

@@ -54,14 +54,14 @@ module Test
 
       def assert_successful(expected_out, cmd)
         out, err, rc = execute(cmd)
-        assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}")
+        assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
         assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
         assert(out =~ /#{expected_out}/, "'#{out}' did not match expected response '#{expected_out}'")
       end
 
       def assert_error(expected_err, cmd)
         out, err, rc = execute(cmd)
-        assert_equal(1, rc.exitstatus, "Expected exit status 1, but it was #{rc.exitstatus}")
+        assert_equal(1, rc.exitstatus, "Expected exit status 1, but it was #{rc.exitstatus}. STDOUT was: #{out}")
         assert(out.empty?, "Expected empty STDOUT, but it yielded #{out}")
         assert(err =~ /#{expected_err}/, "'#{err}' did not match expected response '#{expected_err}'")
       end

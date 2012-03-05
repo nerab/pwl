@@ -146,7 +146,7 @@ module Pwm
       }
     end
 
-    def list
+    def list(filter = nil)
       @backend.transaction(true){
         @backend[:user].keys
       }
