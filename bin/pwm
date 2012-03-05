@@ -27,7 +27,7 @@ command :init do |c|
   c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.action do |args, options|
     raise "Cannot init an existing store" if File.exists?(store_file) # Store checks this too, but we want to fail fast.
-    
+
     begin
       begin
         master_password = get_password('Enter new master password:')
@@ -57,7 +57,7 @@ command :get do |c|
   c.action do |args, options|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
     raise "KEY may not be blank" if args[0].blank?
-    
+
     begin
       puts Pwm::Store.open(store_file, get_password('Enter master password:')).get(args[0])
     rescue Interrupt
@@ -74,8 +74,8 @@ command :put do |c|
   c.example 'Reads STDIN and stores that as value under the key "foo"', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
-    raise "KEY is required" if 0 == args.size
-    
+    raise "KEY may not be blank" if 0 == args.size || args[0].blank?
+
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
       store = Pwm::Store.open(store_file, get_password('Enter master password:'))
@@ -83,14 +83,14 @@ command :put do |c|
       STDERR.puts "Aborted." if options.verbose
       exit 1
     end
-    
+
     value = args[1]
 
     if !value
       raise "VALUE is required" unless STDIN.tty?
       value = ask("Enter value for key '#{args[0]}':")
     end
-    
+
     store.put(args[0], value)
     STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
   end
@@ -107,5 +107,5 @@ def validate!(pwd)
   raise "must contain at least one integer" unless pwd =~ /.*\d/
   raise "at least one character either (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
   raise "special characters are only allowed if ASCII values 20 to 7E" unless pwd =~ /[\x20-\x7E]/
-  raise "minimum length of of 8 characters" unless pwd =~ /^(?=.*\d)(?=.*([a-z]|[A-Z]))([\x20-\x7E]){8}$/  
+  raise "minimum length of of 8 characters" unless pwd =~ /^(?=.*\d)(?=.*([a-z]|[A-Z]))([\x20-\x7E]){8}$/
 end
