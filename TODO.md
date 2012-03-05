@@ -26,6 +26,8 @@
 
     Creates a new alias for an existing key. All subsequent operations to `ALIAS_KEY` will operate on `EXISTING_KEY`.
 
+1. Verbose mode should print statistics on STDERR, e.g. created, last modified, etc.
+
 1. Store more data about each password, for instance
     * last modified (not just for the whole store)
     * last accessed (not just for the whole store)

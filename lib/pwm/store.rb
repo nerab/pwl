@@ -110,14 +110,15 @@ module Pwm
       @backend.transaction{
         @backend[:user] = {}
         @backend[:system] = {}
-        @backend[:system][:created] = "#{Random.rand}-#{DateTime.now.to_s}".encrypt
+        @backend[:system][:created] = DateTime.now
+        @backend[:system][:salt] = Random.rand.to_s.encrypt
       }
     end
 
     def authenticate
       begin
         @backend.transaction(true){
-          @backend[:user] && @backend[:system] && @backend[:system][:created] && @backend[:system][:created].decrypt
+          @backend[:user] && @backend[:system] && @backend[:system][:created] && salt
         }
       rescue OpenSSL::Cipher::CipherError
         raise WrongMasterPasswordError
@@ -149,6 +150,10 @@ module Pwm
       }
     end
 
+    def created
+      @backend.transaction(true){timestamp(:created)}
+    end
+
     def last_accessed
       @backend.transaction(true){timestamp(:last_accessed)}
     end
@@ -158,12 +163,19 @@ module Pwm
     end
 
     private
+    # must run in an transaction
     def timestamp(sym)
       @backend[:system][sym]
     end
 
+    # must run in an transaction
     def timestamp!(sym)
       @backend[:system][sym] = DateTime.now
+    end
+
+    # must run in an transaction
+    def salt
+      @backend[:system][:salt].decrypt
     end
   end
 end
