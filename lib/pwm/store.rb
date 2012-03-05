@@ -102,7 +102,8 @@ module Pwm
     # Beware: New is overridden
     #
     def initialize(file, master_password)
-      @backend = PStore.new(file)
+      @backend = PStore.new(file, true)
+      @backend.ultra_safe = true
       Encryptor.default_options.merge!(:key => master_password)
     end
 
@@ -118,7 +119,8 @@ module Pwm
     def authenticate
       begin
         @backend.transaction(true){
-          @backend[:user] && @backend[:system] && @backend[:system][:created] && salt
+          raise NotInitializedError.new(@backend.path.path) unless @backend[:user] && @backend[:system] && @backend[:system][:created]
+          salt
         }
       rescue OpenSSL::Cipher::CipherError
         raise WrongMasterPasswordError
@@ -175,6 +177,7 @@ module Pwm
 
     # must run in an transaction
     def salt
+      raise NotInitializedError.new(@backend.path.path) if @backend[:system][:salt].blank?
       @backend[:system][:salt].decrypt
     end
   end
