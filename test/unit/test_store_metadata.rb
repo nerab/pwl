@@ -32,4 +32,8 @@ class TestStoreConstruction < Test::Pwm::TestCase
     store.put('foobar', 'barfoot')
     assert_in_delta(DateTime.now.to_time.to_i, store.last_modified.to_time.to_i, TIMESTAMP_PRECISION)
   end
+
+  def test_change_password
+    fail "TBD"
+  end
 end

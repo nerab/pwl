@@ -14,4 +14,18 @@ class TestStoreSecurity < Test::Pwm::TestCase
       Pwm::Store.open(store_file, store_password.reverse)
     end
   end
+
+  def test_change_password
+    store.put('Homer', 'Simpson')
+    store.change_password!(store_password.reverse)
+
+    # the old password must not work anymore
+    assert_raise Pwm::Store::WrongMasterPasswordError do
+      Pwm::Store.open(store_file, store_password)
+    end
+
+    # Read back with the changed password
+    reopened = Pwm::Store.open(store_file, store_password.reverse)
+    assert_equal('Simpson', reopened.get('Homer'))
+  end
 end

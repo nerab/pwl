@@ -99,7 +99,9 @@ module Pwm
     end
 
     #
-    # Beware: New is overridden
+    # Create a new store object by loading an existing file.
+    #
+    # Beware: New is overridden; it performs additional actions after before and after #initialize
     #
     def initialize(file, master_password)
       @backend = PStore.new(file, true)
@@ -107,6 +109,9 @@ module Pwm
       Encryptor.default_options.merge!(:key => master_password)
     end
 
+    #
+    # (Re-) Initialize the database
+    #
     def reset!
       @backend.transaction{
         @backend[:user] = {}
@@ -116,17 +121,23 @@ module Pwm
       }
     end
 
+    #
+    # Check that the master password is correct. This is done to prevent opening an existing but blank store with the wrong password.
+    #
     def authenticate
       begin
         @backend.transaction(true){
           raise NotInitializedError.new(@backend.path.path) unless @backend[:user] && @backend[:system] && @backend[:system][:created]
-          salt
+          check_salt!
         }
       rescue OpenSSL::Cipher::CipherError
         raise WrongMasterPasswordError
       end
     end
 
+    #
+    # Return the value stored under key
+    #
     def get(key)
       raise BlankKeyError if key.blank?
       @backend.transaction{
@@ -137,6 +148,9 @@ module Pwm
       }
     end
 
+    #
+    # Store value stored under key
+    #
     def put(key, value)
       raise BlankKeyError if key.blank?
       raise BlankValueError if value.blank?
@@ -146,6 +160,9 @@ module Pwm
       }
     end
 
+    #
+    # Return all keys, optionally filtered by filter.
+    #
     def list(filter = nil)
       @backend.transaction(true){
         result = @backend[:user].keys.collect{|k| k.decrypt}
@@ -158,31 +175,61 @@ module Pwm
       }
     end
 
+    def change_password!(new_master_password)
+      # Decrypt each key and value with the old master password and encrypt them with the new master password
+      # We do not write back
+      @backend.transaction{
+        timestamp!(:last_modified)
+
+        @backend[:user].each{|k,v|
+          new_key = Encryptor.encrypt(k.decrypt, :key => new_master_password)
+          new_val = Encryptor.encrypt(v.decrypt, :key => new_master_password)
+          @backend[:user][new_key] = new_val
+        }
+
+        # from now on, use the new master password
+        Encryptor.default_options.merge!(:key => new_master_password)
+      }
+    end
+
+    #
+    # Return the date when the store was created
+    #
     def created
-      @backend.transaction(true){timestamp(:created)}
+      @backend.transaction(true){@backend[:system][:created]}
     end
 
+    #
+    # Return the date when the store was last accessed
+    #
     def last_accessed
-      @backend.transaction(true){timestamp(:last_accessed)}
+      @backend.transaction(true){@backend[:system][:last_accessed]}
     end
 
+    #
+    # Return the date when the store was last modified
+    #
     def last_modified
-      @backend.transaction(true){timestamp(:last_modified)}
+      @backend.transaction(true){@backend[:system][:last_modified]}
     end
 
     private
-    # must run in an transaction
-    def timestamp(sym)
-      @backend[:system][sym]
-    end
 
-    # must run in an transaction
+    #
+    # Adds or updates the time-stamp stored under symbol
+    #
+    # This method must run within a PStore read/write transaction.
+    #
     def timestamp!(sym)
       @backend[:system][sym] = DateTime.now
     end
 
-    # must run in an transaction
-    def salt
+    #
+    # Attempts to decrypt the system salt. Throws if the master password is incorrect.
+    #
+    # This method must run within a PStore transaction (may be read-only).
+    #
+    def check_salt!
       raise NotInitializedError.new(@backend.path.path) if @backend[:system][:salt].blank?
       @backend[:system][:salt].decrypt
     end

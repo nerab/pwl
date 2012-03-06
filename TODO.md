@@ -1,12 +1,14 @@
-1. `pwm delete KEY`
-
-    Deletes the entry stored under KEY.
-
 1. `pwm passwd [NEW_MASTER_PASSWORD]`
 
     Changes the master password to `NEW_MASTER_PASSWORD`. If `NEW_MASTER_PASSWORD` is present, no confirmation further password asked is requested. If `NEW_MASTER_PASSWORD` is not present, pwm will read two lines from STDIN, treating the first line as new password and the second line as password confirmation. The command will only succeed if both lines are the same.
 
+1. `pwm delete KEY`
+
+    Deletes the entry stored under KEY.
+
 1.  Like sudo, pwm could become less annoying and ask rather seldom for the master password. After pwm was successfully unlocked, a ticket is granted for 5 minutes (this timeout is configurable). Each subsequent pwm command updates the ticket for another 5 minutes. This avoids the problem of leaving a shell where others can physically get to your keyboard.
+
+    It's not simple to do with the current encryption concept. Because pwm uses symmetric encryption, entries cannot be read from the password database without the knowing the master password. We don't want to write the master password to disk, not do we want to decrypt the whole password database and store it somewhere.
 
 1. Global option --ttl INTEGER
 
