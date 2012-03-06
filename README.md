@@ -5,6 +5,31 @@ pwm is a secure password manager for the command-line.
 
 [![Build Status](https://secure.travis-ci.org/nerab/pwm.png?branch=master)](http://travis-ci.org/nerab/pwm)
 
+Installation
+============
+
+      gem install pwm
+
+Basic Usage
+===========
+Before it can store passwords, pwm needs to initialize the password database. The database file is created with the `init` command and located by default at `~/.pwm.pstore`.
+
+      pwm init
+
+Storing a password requires a key under which the password can be retrieved later on:
+
+      pwm put "Mail Account" s3cret
+
+This command will store the password "s3cret" under the key "Mail Account". Later on this password can be retrieved using the get command:
+
+      pwm get "Mail Account"
+
+This command will print print "s3cret" to the console (STDOUT).
+
+For more usage information, invoke the help command:
+
+      pwm help
+
 Concept
 =======
 pwm is written in the UNIX tradition of having a tool do one thing, and do it well. With this in mind, password management becomes not much more than keeping a list of key-value pairs and securing it from unauthorized access (by encrypting the password database with a master key).
@@ -51,7 +76,7 @@ Calling this line, the password stored under nerab@example.com is copied to the 
 Contributing to pwm
 ===================
 
-* Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
+* Check out the [latest master](http://github.com/nerab/pwm/) to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
 * Fork the project.
 * Start a feature/bugfix branch.
