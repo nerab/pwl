@@ -26,6 +26,8 @@
 
     Alternatively, wrapper scripts like `gpwm`, `kpwm` and `macpwm` and even `wpwm` could be provided.
 
+1. Exit codes should differe depending on the reason, so that shell scripts can react depending on the exit status of pwm. For instance, existing non-zero because a key was not found is different from a wrong master password.
+
 1. Verbose mode should print statistics on STDERR, e.g. created, last modified, etc.
 
 1. Store more data about each password, for instance

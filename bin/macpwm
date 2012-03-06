@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+
+# Wrap CocoaDialog in order to make it easier to integrate with shell scripts
+
+class AppNotFoundError < StandardError;end
+
+#
+# Attempt to find an app within the user's home. If it doesn't exist, an attempt is made to find a system-installed file.
+#
+def find_app(name)
+  local_name = "Applications/#{name}.app/Contents/MacOS/#{name}"
+  [File.expand_path("~/"), '/'].each{|place|
+    local_app = File.join(place, local_name)
+    return local_app if File.exist?(local_app) && File.executable?(local_app)
+  }
+  raise AppNotFoundError.new("Could not find #{name} file. Maybe it is not installed?")
+end
+
+APP_ARGS = 'secure-standard-inputbox --title pwm --informative-text "Please enter the master password:"'
+
+begin
+  out, err, rc = Open3.capture3("#{find_app('CocoaDialog')} #{APP_ARGS}")
+  raise err unless 0 == rc.exitstatus
+  result = out.split
+  puts %x[echo #{result[1].chomp} | pwm #{ARGV.join(' ')}] if 0 == result[0].to_i - 1
+  # puts %x[echo #{}]
+rescue
+  STDERR.puts $!.message
+  exit 1
+end

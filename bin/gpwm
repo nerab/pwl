@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if PASSWORD=$(zenity --entry --hide-text --text "Please enter the master password:" --title pwm)
+then
+  echo $PASSWORD | pwm $*
+else
+  exit $?
+fi
