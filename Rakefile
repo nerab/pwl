@@ -21,7 +21,7 @@ Jeweler::Tasks.new do |gem|
   gem.description = %Q{pwm is a secure password manager for the commandline}
   gem.email = "nerab@gmx.net"
   gem.authors = ["Nicholas E. Rabenau"]
-  gem.executables << 'pwm' << 'gpwm' << 'macpwm'
+  gem.executables << 'pwm'
 end
 Jeweler::RubygemsDotOrgTasks.new
 

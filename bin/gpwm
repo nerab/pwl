@@ -1,8 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-if PASSWORD=$(zenity --entry --hide-text --text "Please enter the master password:" --title pwm)
-then
-  echo $PASSWORD | pwm $*
-else
-  exit $?
-fi
+$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+require 'pwm/dialog'
+
+begin
+  puts %x[echo "#{Pwm::Dialog::LinuxDialog.new.get_password}" | bin/pwm #{ARGV.join(' ')}]
+rescue Pwm::Dialog::Cancelled
+  exit $!.message
+end

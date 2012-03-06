@@ -18,6 +18,7 @@ global_option '-V', '--verbose', 'Enable verbose output'
 global_option('-f', '--file FILE', 'Determine the file that holds the store'){|file|
   store_file = file
 }
+global_option '-g', '--gui', 'Request the master password using an OS-specific GUI'
 
 command :init do |c|
   c.syntax = "#{program(:name)} init"
@@ -33,7 +34,7 @@ command :init do |c|
 
     begin
       begin
-        master_password = get_password('Enter new master password:')
+        master_password = get_password('Enter new master password:', options.gui)
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue StandardError => e
@@ -42,11 +43,11 @@ command :init do |c|
       end
 
       # Ask for password confimation if running in interactive mode (terminal)
-      raise "Error: Passwords do not match" if STDIN.tty? && master_password != password('Enter master password again:')
+      raise "Error: Passwords do not match" if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
 
       Pwm::Store.new(store_file, master_password, {:force => options.force})
       STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
-    rescue Interrupt
+    rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
     end
   end
@@ -62,8 +63,8 @@ command :get do |c|
     raise "KEY may not be blank" if args[0].blank?
 
     begin
-      puts Pwm::Store.open(store_file, get_password('Enter master password:')).get(args[0])
-    rescue Interrupt
+      puts Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
+    rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
     end
   end
@@ -82,8 +83,8 @@ command :list do |c|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
 
     begin
-      puts Pwm::Store.open(store_file, get_password('Enter master password:')).list(args[0]).join(options.separator)
-    rescue Interrupt
+      puts Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
+    rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
     end
   end
@@ -101,8 +102,8 @@ command :put do |c|
 
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
-      store = Pwm::Store.open(store_file, get_password('Enter master password:'))
-    rescue Interrupt
+      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
+    rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
       exit 1
     end
@@ -119,8 +120,23 @@ command :put do |c|
   end
 end
 
-def get_password(prompt)
-  STDIN.tty? ? password(prompt) : STDIN.read.chomp
+#
+# Delegate password request to a driver, either console or GUI.
+#
+# If gui is true, the driver will be OS-agnostic.
+#
+def get_password(prompt, gui = false)
+  if !gui
+    driver = Pwm::Dialog::ConsoleDialog.new(prompt)
+  else
+    driver = case ENV['GDMSESSION']
+      when /gnome/; Pwm::Dialog::GnomeDialog.new(program(:name), prompt)
+      when /mac/; Pwm::Dialog::MacOSDialog.new(program(:name), prompt)
+      else Pwm::Dialog::ConsoleDialog.new(prompt)
+    end
+  end
+
+  driver.get_password
 end
 
 def validate!(pwd)
