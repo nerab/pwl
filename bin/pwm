@@ -112,7 +112,7 @@ command :put do |c|
 
     if !value
       raise "VALUE is required" unless STDIN.tty?
-      value = get_text("Enter value for key '#{args[0]}':")
+      value = get_text("Enter value for key '#{args[0]}':", options.gui)
     end
 
     store.put(args[0], value)
