@@ -1,3 +1,5 @@
+1. Only pressing enter in the GUI password box raises a NilClass error on the Mac. Must deal with empty passwords at app as well as lib level.
+
 1. `pwm passwd [NEW_MASTER_PASSWORD]`
 
     Changes the master password to `NEW_MASTER_PASSWORD`. If `NEW_MASTER_PASSWORD` is present, no confirmation further password asked is requested. If `NEW_MASTER_PASSWORD` is not present, pwm will read two lines from STDIN, treating the first line as new password and the second line as password confirmation. The command will only succeed if both lines are the same.

@@ -120,33 +120,12 @@ command :put do |c|
   end
 end
 
-#
-# Delegate password request to a driver, either console or GUI.
-#
-# If gui is true, the driver will be OS-agnostic.
-#
 def get_password(prompt, gui = false)
-  if !gui
-    Pwm::Dialog::ConsolePasswordDialog.new(prompt)
-  elsif ENV['GDMSESSION']
-    Pwm::Dialog::GnomePasswordDialog.new(program(:name), prompt)
-  elsif RUBY_PLATFORM =~ /darwin/
-    Pwm::Dialog::MacOSPasswordDialog.new(program(:name), prompt)
-  else 
-    Pwm::Dialog::ConsolePasswordDialog.new(prompt)
-  end.get_input
+  (gui ? Pwm::Dialog.password_dialog.new(program(:name), prompt) : Pwm::Dialog::ConsolePasswordDialog.new(prompt)).get_input
 end
 
 def get_text(prompt, gui = false)
-  if !gui
-    Pwm::Dialog::ConsoleTextDialog.new(prompt)
-  elsif ENV['GDMSESSION']
-    Pwm::Dialog::GnomeTextDialog.new(program(:name), prompt)
-  elsif RUBY_PLATFORM =~ /darwin/
-    Pwm::Dialog::MacOSTextDialog.new(program(:name), prompt)
-  else 
-    Pwm::Dialog::ConsoleTextDialog.new(prompt)
-  end.get_input
+  (gui ? Pwm::Dialog.text_dialog.new(program(:name), prompt) : Pwm::Dialog::ConsoleTextDialog.new(prompt)).get_input
 end
 
 def validate!(pwd)

@@ -1,5 +1,10 @@
+require 'open3'
+
 module Pwm
   module Dialog
+    class AppNotFoundError < StandardError;end
+    class Cancelled < StandardError;end
+
     #
     # Base class for dialogs. At this point, only password entry dialogs are implemented.
     #

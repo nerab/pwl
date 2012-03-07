@@ -5,7 +5,7 @@ module Pwm
     class ConsoleBaseDialog < BaseDialog
       def initialize(prompt)
         super(nil, prompt)
-        @dialog = HighLine.new
+        @dialog = HighLine.new(STDIN, STDERR)
       end
       
       protected
@@ -19,19 +19,7 @@ module Pwm
 
       def get_input
         begin
-          if STDIN.tty? && STDOUT.tty?             # read from regular console input, print to regular console output
-            @dialog.ask(prompt){|q| q.echo = "*"}
-          elsif !STDIN.tty? && STDOUT.tty?         # read from pipe, print to regular console output
-            STDERR.puts(prompt)
-            STDIN.read.chomp
-          elsif STDIN.tty? && !STDOUT.tty?         # read from regular console input, print to pipe
-            STDERR.print(prompt)
-            result = @dialog.ask(''){|q| q.echo = ''}
-            STDERR.puts
-            result
-          else # !STDIN.tty? && !STDOUT.tty?       # read from pipe, print to pipe
-            STDIN.read.chomp
-          end
+          STDIN.tty? ? @dialog.ask(prompt){|q| q.echo = "*"} : STDIN.read.chomp
         rescue Interrupt
           raise Cancelled.new(1)
         end
