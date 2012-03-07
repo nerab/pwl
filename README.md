@@ -16,15 +16,15 @@ Before it can store passwords, pwm needs to initialize the password database. Th
 
       pwm init
 
-Storing a password requires a key under which the password can be retrieved later on:
+Storing a password requires a name under which the password can be retrieved later on:
 
       pwm put "Mail Account" s3cret
 
-This command will store the password "s3cret" under the key "Mail Account". Later on this password can be retrieved using the get command:
+This command will store the password "s3cret" under the name "Mail Account". Later on this password can be retrieved using the get command:
 
       pwm get "Mail Account"
 
-This command will print print "s3cret" to the console (STDOUT).
+This command will print "s3cret" to the console (STDOUT).
 
 For more usage information, invoke the help command:
 
@@ -32,7 +32,7 @@ For more usage information, invoke the help command:
 
 Concept
 =======
-pwm is written in the UNIX tradition of having a tool do one thing, and do it well. With this in mind, password management becomes not much more than keeping a list of key-value pairs and securing it from unauthorized access (by encrypting the password database with a master key).
+pwm is written in the UNIX tradition of having a tool do one thing, and do it well. With this in mind, password management becomes not much more than keeping a list of name-value pairs and securing it from unauthorized access (by encrypting the password database with a master password).
 
 The whole topic becomes much more interesting when you start integrating a password manager into various tools and applications. There is no widely accepted standard for how password managers could hook into applications, and so almost every tool falls back to the system clipboard. Notable exceptions are modern browsers, which provide password manager integration by their generic plugin concepts.
 
@@ -45,33 +45,21 @@ pwm focuses on the command line where standard input (STDIN) and output (STDOUT)
 
 Security
 ========
-When it comes to securing passwords, pwm does not make any compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All keys and values are individually encrypted with the master key.
+When it comes to securing passwords, pwm does not make any compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All names and values are individually encrypted with the master password.
 
 Integration
 ===========
-When invoked on a console, pwm will ask for the master password to be typed into the console (using the [HighLine](http://highline.rubyforge.org) library).
+When invoked on a console, pwm will ask for the master password to be typed into the console (using the [HighLine](http://highline.rubyforge.org) library). pwm also behaves well when run in a pipe. You can pipe the master password into pwm. Similarly, instead of printing the retrieved password to the console, pwm's output can be used as input for yet another program.For instance, the popular request for copying a password to the clipboard can be achieved by piping pwm's output into a clipboard application that reads from STDIN, e.g. pbcopy (Mac), xclip (Linux), clip (Windows >= Vista), putclip (cygwin).
 
-The master password can also be provided more conveniently with a GUI tool. pwm will read the master password from STDIN when running in a pipe. On Linux, [gdialog](http://linux.about.com/library/cmd/blcmdl1_gdialog.htm) or [kdialog](http://techbase.kde.org/Development/Tutorials/Shell_Scripting_with_KDE_Dialogs#Example_1:_Password_Dialog) or [Zenity](http://live.gnome.org/Zenity) could be used for that.
+Example on MacOS:
 
-Example for Zenity:
+    pwm get nerab@example.com | pbcopy
 
-    zenity --entry --hide-text --text "Please enter the master password:" --title pwm | pwm get nerab@example.com
+Or, if you prefer to enter the master password via a regular dialog box, you can run the same command with the --gui flag:
 
-On the Mac, [CocoaDialog](http://mstratman.github.com/cocoadialog/) or [Pashua](http://www.bluem.net/en/mac/pashua/) could be used. If you have CocoaDialog installed, the following snippet will work on MacOS:
+    pwm get nerab@example.com --gui | pbcopy
 
-    /Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog secure-standard-inputbox --title pwm --informative-text "Please enter the master password:" | ruby -e "r = ARGF.read.split; puts r[1] if r[0] == '1'" | pwm get nerab@example.com
-
-This line is a little more involved because CocoaDialog returns two lines of output; first the number of the button that was pressed, and second the actual user input.
-
-Both commands will request the pwm master password using a GUI dialog and pipe it into pwm, which will in turn print the password stored under nerab@example.com to the console.
-
-Instead of pwm printing the password to the console, the output can be used as input for yet other programs. For instance, the popular request for copying a password to the clipboard can be achieved by piping pwm's output into a clipboard application that reads from STDIN, e.g. pbcopy (Mac), xclip (Linux), clip (Windows >= Vista), putclip (cygwin).
-
-On the Mac this command would become as crazy as:
-
-    /Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog secure-standard-inputbox --title pwm --informative-text "Please enter the master password:" | ruby -e "r = ARGF.read.split; puts r[1] if r[0] == '1'" | pwm get nerab@example.com | pbcopy
-
-Calling this line, the password stored under nerab@example.com is copied to the clipboard.
+By calling this line, the password stored under nerab@example.com is copied to the clipboard.
 
 Contributing to pwm
 ===================
