@@ -112,7 +112,7 @@ command :put do |c|
 
     if !value
       raise "VALUE is required" unless STDIN.tty?
-      value = ask("Enter value for key '#{args[0]}':")
+      value = get_text("Enter value for key '#{args[0]}':")
     end
 
     store.put(args[0], value)
@@ -127,16 +127,26 @@ end
 #
 def get_password(prompt, gui = false)
   if !gui
-    driver = Pwm::Dialog::ConsoleDialog.new(prompt)
-  else
-    driver = case ENV['GDMSESSION']
-      when /gnome/; Pwm::Dialog::GnomeDialog.new(program(:name), prompt)
-      when /mac/; Pwm::Dialog::MacOSDialog.new(program(:name), prompt)
-      else Pwm::Dialog::ConsoleDialog.new(prompt)
-    end
-  end
+    Pwm::Dialog::ConsolePasswordDialog.new(prompt)
+  elsif ENV['GDMSESSION']
+    Pwm::Dialog::GnomePasswordDialog.new(program(:name), prompt)
+  elsif RUBY_PLATFORM =~ /darwin/
+    Pwm::Dialog::MacOSPasswordDialog.new(program(:name), prompt)
+  else 
+    Pwm::Dialog::ConsolePasswordDialog.new(prompt)
+  end.get_input
+end
 
-  driver.get_password
+def get_text(prompt, gui = false)
+  if !gui
+    Pwm::Dialog::ConsoleTextDialog.new(prompt)
+  elsif ENV['GDMSESSION']
+    Pwm::Dialog::GnomeTextDialog.new(program(:name), prompt)
+  elsif RUBY_PLATFORM =~ /darwin/
+    Pwm::Dialog::MacOSTextDialog.new(program(:name), prompt)
+  else 
+    Pwm::Dialog::ConsoleTextDialog.new(prompt)
+  end.get_input
 end
 
 def validate!(pwd)

@@ -9,7 +9,7 @@ module Pwm
       #
       # Constructs a new dialog with the given title and prompt.
       #
-      def initialize(title = 'pwm', prompt = 'Please enter the master password:')
+      def initialize(title, prompt)
         @title, @prompt = title, prompt
       end
     end
@@ -18,7 +18,7 @@ module Pwm
     # Base class for dialogs implemented by executing a system command.
     #
     class SystemDialog < BaseDialog
-      def get_password
+      def get_input
         out, err, rc = Open3.capture3(command)
         raise Cancelled.new(rc.exitstatus) unless 0 == rc.exitstatus
         out.chomp
