@@ -106,7 +106,7 @@ module Pwm
     def initialize(file, master_password)
       @backend = PStore.new(file, true)
       @backend.ultra_safe = true
-      Encryptor.default_options.merge!(:key => master_password)
+      @master_password = master_password
     end
 
     #
@@ -117,7 +117,7 @@ module Pwm
         @backend[:user] = {}
         @backend[:system] = {}
         @backend[:system][:created] = DateTime.now
-        @backend[:system][:salt] = Random.rand.to_s.encrypt
+        @backend[:system][:salt] = encrypt(Random.rand.to_s)
       }
     end
 
@@ -142,9 +142,9 @@ module Pwm
       raise BlankKeyError if key.blank?
       @backend.transaction{
         timestamp!(:last_accessed)
-        value = @backend[:user][key.encrypt]
+        value = @backend[:user][encrypt(key)]
         raise KeyNotFoundError.new(key) unless value
-        value.decrypt
+        decrypt(value)
       }
     end
 
@@ -156,7 +156,7 @@ module Pwm
       raise BlankValueError if value.blank?
       @backend.transaction{
         timestamp!(:last_modified)
-        @backend[:user][key.encrypt] = value.encrypt
+        @backend[:user][encrypt(key)] = encrypt(value)
       }
     end
 
@@ -165,7 +165,7 @@ module Pwm
     #
     def list(filter = nil)
       @backend.transaction(true){
-        result = @backend[:user].keys.collect{|k| k.decrypt}
+        result = @backend[:user].keys.collect{|k| decrypt(k)}
 
         if filter.blank?
           result
@@ -176,19 +176,23 @@ module Pwm
     end
 
     def change_password!(new_master_password)
-      # Decrypt each key and value with the old master password and encrypt them with the new master password
-      # We do not write back
       @backend.transaction{
-        timestamp!(:last_modified)
-
+        # Decrypt each key and value with the old master password and encrypt them with the new master password
+        copy = {}
         @backend[:user].each{|k,v|
-          new_key = Encryptor.encrypt(k.decrypt, :key => new_master_password)
-          new_val = Encryptor.encrypt(v.decrypt, :key => new_master_password)
-          @backend[:user][new_key] = new_val
+          new_key = Encryptor.encrypt(decrypt(k), :key => new_master_password)
+          new_val = Encryptor.encrypt(decrypt(v), :key => new_master_password)
+          copy[new_key] = new_val
         }
 
-        # from now on, use the new master password
-        Encryptor.default_options.merge!(:key => new_master_password)
+        # re-write user branch with newly encrypted keys and values
+        @backend[:user] = copy
+
+        # from now on, use the new master password as long as the object lives
+        @master_password = new_master_password
+
+        timestamp!(:last_modified)
+        @backend[:system][:salt] = encrypt(Random.rand.to_s)
       }
     end
 
@@ -224,6 +228,14 @@ module Pwm
       @backend[:system][sym] = DateTime.now
     end
 
+    def encrypt(value)
+      Encryptor.encrypt(value, :key => @master_password)
+    end
+
+    def decrypt(value)
+      Encryptor.decrypt(value, :key => @master_password)
+    end
+
     #
     # Attempts to decrypt the system salt. Throws if the master password is incorrect.
     #
@@ -231,7 +243,8 @@ module Pwm
     #
     def check_salt!
       raise NotInitializedError.new(@backend.path.path) if @backend[:system][:salt].blank?
-      @backend[:system][:salt].decrypt
+      decrypt(@backend[:system][:salt])
+      nil
     end
   end
 end
