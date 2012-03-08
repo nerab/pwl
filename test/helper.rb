@@ -61,7 +61,7 @@ module Test
 
       def assert_error(expected_err, cmd)
         out, err, rc = execute(cmd)
-        assert_equal(1, rc.exitstatus, "Expected exit status 1, but it was #{rc.exitstatus}. STDOUT was: #{out}")
+        assert_not_equal(0, rc.exitstatus, "Expected non-zero exit status, but it was #{rc.exitstatus}. STDOUT was: #{out}")
         assert(out.empty?, "Expected empty STDOUT, but it yielded #{out}")
         assert(err =~ /#{expected_err}/, "'#{err}' did not match expected response '#{expected_err}'")
       end

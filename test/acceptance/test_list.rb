@@ -4,7 +4,8 @@ require 'helper'
 class TestList < Test::Pwm::AppTestCase
   def test_list_empty
     assert_empty(store.list)
-    assert_successful('^$', 'list')
+    assert_error('^$', 'list')
+    assert_error('^List is empty\.$', 'list --verbose')
   end
 
   def test_list_all

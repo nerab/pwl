@@ -10,8 +10,23 @@ program :version, Pwm::VERSION
 program :description, "#{program(:name)} is a secure password manager for the commandline"
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
-DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
+# TODO Document exit codes in help text
+EXIT_CODES = {
+  :aborted              => Pwm::Message.new('Aborted by user.', 1),
+  :passwords_dont_match => Pwm::ErrorMessage.new('Passwords do not match.', 2),
+  :no_value_found       => Pwm::Message.new('No value found for <% key %>', 3),
+  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <% file %>. Use --force to overwrite it or --file to specify a different store.', 4),
+  :file_not_found       => Pwm::ErrorMessage.new('Store file <% file %> could not be found.', 5),
+  :key_blank            => Pwm::ErrorMessage.new('Name may not be blank.', 6),
+  :value_blank          => Pwm::ErrorMessage.new('Value may not be blank', 7),
+  :list_empty           => Pwm::Message.new('List is empty.', 8),
+  :list_empty_filter    => Pwm::Message.new('No names found that match filter <% filter %>.', 9),
+}
 
+# <%=t 'greet_username', :user => "Bill", :message => "Goodbye" %>
+# greet_username: "%{message}, %{user}!"
+
+DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
 store_file = DEFAULT_STORE_FILE
 
 global_option '-V', '--verbose', 'Enable verbose output'
@@ -28,9 +43,8 @@ command :init do |c|
   c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.option '--force', 'Force-overwrite an existing store file'
   c.action do |args, options|
-    if File.exists?(store_file) && !options.force # Store checks this too, but we want to fail fast.
-      raise "There already exists a store at #{store_file}. Use --force to overwrite it or pass --file to specify a different store"
-    end
+    # Store checks this too, but we want to fail fast.
+    exit_with(:file_exists, options.verbose, :file => store_file) if File.exists?(store_file) && !options.force
 
     begin
       begin
@@ -38,17 +52,19 @@ command :init do |c|
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue StandardError => e
-        puts "Error: Master password #{$!}"
-        true
+        STDERR.puts "Error: Master password #{$!}"
+        true # means 'continue the loop'
       end
 
       # Ask for password confimation if running in interactive mode (terminal)
-      raise "Error: Passwords do not match" if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
+      if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
+        exit_with(:passwords_dont_match, options.verbose)
+      end
 
       Pwm::Store.new(store_file, master_password, {:force => options.force})
       STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
     rescue Pwm::Dialog::Cancelled
-      STDERR.puts "Aborted." if options.verbose
+      exit_with(:aborted, options.verbose)
     end
   end
 end
@@ -59,18 +75,19 @@ command :get do |c|
   c.description = 'This command retrieves the value stored under KEY and prints it on STDOUT.'
   c.example 'Reads the value stored under the key "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
-    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
-    raise "KEY may not be blank" if args[0].blank?
+    # Store checks this too, but we want to fail fast and provide a message.
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:key_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
       result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
       if result.blank?
-        STDERR.puts "No value found for '#{args[0]}'" if options.verbose
+        exit_with(:no_value_found, options.verbose, :key => args[0])
       else
         puts result
       end
     rescue Pwm::Dialog::Cancelled
-      STDERR.puts "Aborted." if options.verbose
+      exit_with(:aborted, options.verbose)
     end
   end
 end
@@ -84,20 +101,24 @@ command :list do |c|
   c.example 'Prints all keys separated by comma', "#{program(:name)} #{c.name} --separator ,"
   c.option '-s', '--separator SEPARATOR', String, 'Separate keys by SEPARATOR'
   c.action do |args, options|
+    # Store checks this too, but we want to fail fast and provide a message.
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+
     options.default :separator => ' '
-    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
 
     begin
       result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
-      if result.blank?
-        STDERR.puts "No values found#{' for filter ' + args[0] if args[0]}." if options.verbose
-        exit 1
-      else
+      if !result.blank?
         puts result
+      else
+        if args[0] # filter given
+          exit_with(:list_empty_filter, options.verbose, args[0])
+        else
+          exit_with(:list_empty, options.verbose)
+        end
       end
     rescue Pwm::Dialog::Cancelled
-      STDERR.puts "Aborted." if options.verbose
-      exit 1
+      exit_with(:aborted, options.verbose)
     end
   end
 end
@@ -109,27 +130,38 @@ command :put do |c|
   c.example 'Stores the value "bar" under the key "foo"', "#{program(:name)} #{c.name} foo bar"
   c.example 'Reads STDIN and stores that as value under the key "foo"', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
-    raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
-    raise "KEY may not be blank" if 0 == args.size || args[0].blank?
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:key_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
       store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
     rescue Pwm::Dialog::Cancelled
-      STDERR.puts "Aborted." if options.verbose
-      exit 1
+      exit_with(:aborted, options.verbose)
     end
 
     value = args[1]
 
     if !value
-      raise "VALUE is required" unless STDIN.tty?
+      exit_with(:value_blank, options.verbose) unless STDIN.tty?
       value = get_text("Enter value for key '#{args[0]}':", options.gui)
+      exit_with(:value_blank, options.verbose) if value.blank? # still blank, even after asking for it
     end
 
     store.put(args[0], value)
     STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
   end
+end
+
+def exit_with(error_code, verbose, msg_args = {})
+  msg = EXIT_CODES[error_code]
+  raise "No message defined for error #{error_code}" if !msg
+
+  if msg.error? || verbose # always print errors; messages only when verbose
+    STDERR.puts msg.to_s(msg_args)
+  end
+
+  exit(msg.exit_code)
 end
 
 def get_password(prompt, gui = false)
