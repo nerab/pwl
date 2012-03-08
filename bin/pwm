@@ -144,9 +144,18 @@ command :put do |c|
     value = args[1]
 
     if !value
-      exit_with(:value_blank, options.verbose) unless STDIN.tty?
-      value = get_text("Enter value for key '#{args[0]}':", options.gui)
-      exit_with(:value_blank, options.verbose) if value.blank? # still blank, even after asking for it
+      exit_with(:value_blank, options.verbose) unless STDIN.tty? || options.gui
+      
+      begin
+        value = get_text("Enter value for key '#{args[0]}':", options.gui)
+      rescue Pwm::Dialog::Cancelled
+        exit_with(:aborted, options.verbose)
+      end
+      
+      # still blank, even after asking for it?
+      if value.blank? 
+        exit_with(:value_blank, true)
+      end
     end
 
     store.put(args[0], value)

@@ -7,9 +7,9 @@ module Pwm
       #
       def get_input
         result = super.split
-
-        if 0 == result[0].to_i - 1
-          result[1] ? result[1].chomp : ''
+        
+        if result && 2 == result.size && 0 == result[0].to_i - 1
+          result[1].chomp
         else
           raise Cancelled.new(result[0].to_i - 1)
         end
