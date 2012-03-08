@@ -56,18 +56,6 @@ module Pwm
       #
       # Constructs a new store (not only the object, but also the file behind it).
       #
-      # Store.new(file, master_password, options)
-      #   file.exists?
-      #     true:
-      #       options[:force]
-      #         true:
-      #           load
-      #           reset!
-      #         false:
-      #           raise FileAlreadyExistsError
-      #     no:
-      #       load
-      #       reset!
       def new(file, master_password, options = {})
         if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file
           raise FileAlreadyExistsError.new(file)
@@ -81,14 +69,6 @@ module Pwm
 
       #
       # Opens an existing store. Throws if the backing file does not exist or isn't initialized.
-      #
-      # Store.open(file, master_password)
-      #   file.exists?
-      #     true:
-      #       load
-      #       authenticate
-      #     false:
-      #       raise FileNotFoundError
       #
       def open(file, master_password)
         raise FileNotFoundError.new(file) unless File.exists?(file)
@@ -174,7 +154,11 @@ module Pwm
         end
       }
     end
-
+    
+    #
+    # Change the master password to +new_master_password+. Note that we don't take a password confirmation here.
+    # This is up to a UI layer.
+    #
     def change_password!(new_master_password)
       @backend.transaction{
         # Decrypt each key and value with the old master password and encrypt them with the new master password
@@ -227,11 +211,17 @@ module Pwm
     def timestamp!(sym)
       @backend[:system][sym] = DateTime.now
     end
-
+    
+    #
+    # Return the encrypted +value+ (uses the current master password)
+    #
     def encrypt(value)
       Encryptor.encrypt(value, :key => @master_password)
     end
 
+    #
+    # Return the decrypted +value+ (uses the current master password)
+    #
     def decrypt(value)
       Encryptor.decrypt(value, :key => @master_password)
     end

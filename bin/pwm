@@ -145,21 +145,55 @@ command :put do |c|
 
     if !value
       exit_with(:value_blank, options.verbose) unless STDIN.tty? || options.gui
-      
+
       begin
         value = get_text("Enter value for key '#{args[0]}':", options.gui)
       rescue Pwm::Dialog::Cancelled
         exit_with(:aborted, options.verbose)
       end
-      
+
       # still blank, even after asking for it?
-      if value.blank? 
+      if value.blank?
         exit_with(:value_blank, true)
       end
     end
 
     store.put(args[0], value)
     STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
+  end
+end
+
+command :passwd do |c|
+  c.syntax = "#{program(:name)} passwd [NEW_MASTER_PASSWORD]"
+  c.summary = 'Changes the master password to NEW_MASTER_PASSWORD.'
+  c.description = 'This command changes the master password of the store. Password quality is enforced using validation rules.'
+  c.action do |args, options|
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+
+    begin
+      store = Pwm::Store.open(store_file, get_password('Enter current master password:', options.gui))
+
+      begin
+        new_master_password = get_password('Enter new master password:', options.gui)
+      end while begin
+        validate!(new_master_password)
+      rescue StandardError => e
+        STDERR.puts "Error: Master password #{e}."
+        options.gui # only continue the loop when in gui mode
+      end
+
+      # TODO If we are in a pipe and do not run in GUI mode, we expect the new password as args[0]
+
+      # Ask for password confirmation if running in interactive mode (terminal)
+      if STDIN.tty? && new_master_password != get_password('Enter new master password again:', options.gui)
+        exit_with(:passwords_dont_match, options.verbose)
+      end
+
+      store.change_password!(new_master_password)
+      STDERR.puts "Successfully changed master password." if options.verbose
+    rescue Pwm::Dialog::Cancelled
+      exit_with(:aborted, options.verbose)
+    end
   end
 end
 
@@ -189,5 +223,4 @@ def validate!(pwd)
   raise "must contain at least one integer" unless pwd =~ /.*\d/
   raise "at least one character either (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
   raise "special characters are only allowed if ASCII values 20 to 7E" unless pwd =~ /[\x20-\x7E]/
-  raise "minimum length of of 8 characters" unless pwd =~ /^(?=.*\d)(?=.*([a-z]|[A-Z]))([\x20-\x7E]){8}$/
 end
