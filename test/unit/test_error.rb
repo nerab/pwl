@@ -2,7 +2,7 @@ require 'helper'
 
 class TestError < Test::Unit::TestCase
   def setup
-    @message = Pwm::ErrorMessage.new("<%= first %> <%= last %>", 1)
+    @message = Pwm::ErrorMessage.new("<%= first %> <%= last %>", 1, :first => 'FIRSTNAME', :last => 'LASTNAME')
   end
 
   def test_code_0
@@ -16,9 +16,7 @@ class TestError < Test::Unit::TestCase
   end
 
   def test_to_s_empty
-    assert_raise NameError do
-      @message.to_s
-    end
+    assert_equal('Error: FIRSTNAME LASTNAME', @message.to_s)
   end
 
   def test_code

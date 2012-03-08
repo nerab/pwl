@@ -8,23 +8,22 @@ require 'pwm'
 
 program :version, Pwm::VERSION
 program :description, "#{program(:name)} is a secure password manager for the commandline"
-program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 # TODO Document exit codes in help text
 EXIT_CODES = {
   :aborted              => Pwm::Message.new('Aborted by user.', 1),
   :passwords_dont_match => Pwm::ErrorMessage.new('Passwords do not match.', 2),
-  :no_value_found       => Pwm::Message.new('No value found for <% key %>', 3),
-  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <% file %>. Use --force to overwrite it or --file to specify a different store.', 4),
-  :file_not_found       => Pwm::ErrorMessage.new('Store file <% file %> could not be found.', 5),
+  :no_value_found       => Pwm::Message.new('No value found for <% key %>', 3, :key => 'KEY'),
+  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <% file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
+  :file_not_found       => Pwm::ErrorMessage.new('Store file <% file %> could not be found.', 5, :file => 'FILE'),
   :key_blank            => Pwm::ErrorMessage.new('Name may not be blank.', 6),
   :value_blank          => Pwm::ErrorMessage.new('Value may not be blank', 7),
   :list_empty           => Pwm::Message.new('List is empty.', 8),
-  :list_empty_filter    => Pwm::Message.new('No names found that match filter <% filter %>.', 9),
+  :list_empty_filter    => Pwm::Message.new('No names found that match filter <% filter %>.', 9, :filter => 'FILTER'),
 }
 
-# <%=t 'greet_username', :user => "Bill", :message => "Goodbye" %>
-# greet_username: "%{message}, %{user}!"
+program :help, 'Exit Status', EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "    #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
+program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
 store_file = DEFAULT_STORE_FILE

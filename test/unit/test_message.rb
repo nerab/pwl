@@ -2,17 +2,15 @@ require 'helper'
 
 class TestMessageZero < Test::Unit::TestCase
   def setup
-    @msg = Pwm::Message.new("Name: <%= first %> <%= last %>")
+    @msg = Pwm::Message.new("Name: <%= first %> <%= last %>", 0, :first => 'FIRSTNAME', :last => 'LASTNAME')
   end
 
   def test_to_s
     assert_equal('Name: Mislav Marohnic', @msg.to_s(:first => "Mislav", "last" => "Marohnic"))
   end
 
-  def test_to_s_empty
-    assert_raise NameError do
-      @msg.to_s
-    end
+  def test_to_s_default
+    assert_equal('Name: FIRSTNAME LASTNAME', @msg.to_s)
   end
 
   def test_code

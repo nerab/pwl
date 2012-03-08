@@ -14,13 +14,18 @@ module Pwm
   class Message
     attr_reader :exit_code
 
-    def initialize(template, exit_code = 0)
+    def initialize(template, exit_code = 0, default_replacements = {})
       @template = ERB.new(template)
       @exit_code = exit_code
+      @default_replacements = default_replacements
     end
 
     def to_s(replacements = {})
-      @template.result(replacements.to_binding)
+      if !replacements.any? && @default_replacements.any?
+        @template.result(@default_replacements.to_binding)
+      else
+        @template.result(replacements.to_binding)
+      end
     end
 
     def error?
@@ -29,9 +34,9 @@ module Pwm
   end
 
   class ErrorMessage < Message
-    def initialize(template, exit_code)
+    def initialize(template, exit_code, default_replacements = {})
       raise ReservedMessageCodeError.new("Exit code 0 is reserved for success messages") if 0 == exit_code
-      super(template, exit_code)
+      super(template, exit_code, default_replacements)
     end
 
     def to_s(replacements = {})
