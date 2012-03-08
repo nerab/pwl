@@ -63,7 +63,12 @@ command :get do |c|
     raise "KEY may not be blank" if args[0].blank?
 
     begin
-      puts Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
+      result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
+      if result.blank?
+        STDERR.puts "No value found for '#{args[0]}'" if options.verbose
+      else
+        puts result
+      end
     rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
     end
@@ -83,9 +88,16 @@ command :list do |c|
     raise "Store file '#{store_file}' cannot be found" unless File.exists?(store_file) # Store checks this too, but we want to fail fast.
 
     begin
-      puts Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
+      result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
+      if result.blank?
+        STDERR.puts "No values found#{' for filter ' + args[0] if args[0]}." if options.verbose
+        exit 1
+      else
+        puts result
+      end
     rescue Pwm::Dialog::Cancelled
       STDERR.puts "Aborted." if options.verbose
+      exit 1
     end
   end
 end
