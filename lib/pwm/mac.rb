@@ -33,13 +33,13 @@ module Pwm
     
     class MacOSTextDialog < MacOSDialog
       def command
-        "#{local_app_name} standard-inputbox --title '#{title}' --informative-text '#{prompt}'"
+        "#{local_app_name} standard-inputbox --title \"#{title}\" --informative-text \"#{prompt}\""
       end
     end
     
     class MacOSPasswordDialog < MacOSDialog
       def command
-        "#{local_app_name} secure-standard-inputbox --title '#{title}' --informative-text '#{prompt}'"
+        "#{local_app_name} secure-standard-inputbox --title \"#{title}\" --informative-text \"#{prompt}\""
       end
     end
   end
