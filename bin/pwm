@@ -7,22 +7,24 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'pwm'
 
 program :version, Pwm::VERSION
-program :description, "#{program(:name)} is a secure password manager for the commandline"
+program :description, "#{program(:name)} is a secure password manager for the command line."
 
 # TODO Document exit codes in help text
 EXIT_CODES = {
+  :success              => Pwm::Message.new('Success.'),
   :aborted              => Pwm::Message.new('Aborted by user.', 1),
   :passwords_dont_match => Pwm::ErrorMessage.new('Passwords do not match.', 2),
-  :no_value_found       => Pwm::Message.new('No value found for <% key %>', 3, :key => 'KEY'),
-  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <% file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
-  :file_not_found       => Pwm::ErrorMessage.new('Store file <% file %> could not be found.', 5, :file => 'FILE'),
+  :no_value_found       => Pwm::Message.new('No value found for <%= key %>.', 3, :key => 'KEY'),
+  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
+  :file_not_found       => Pwm::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
   :key_blank            => Pwm::ErrorMessage.new('Name may not be blank.', 6),
-  :value_blank          => Pwm::ErrorMessage.new('Value may not be blank', 7),
+  :value_blank          => Pwm::ErrorMessage.new('Value may not be blank.', 7),
   :list_empty           => Pwm::Message.new('List is empty.', 8),
-  :list_empty_filter    => Pwm::Message.new('No names found that match filter <% filter %>.', 9, :filter => 'FILTER'),
+  :list_empty_filter    => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
 }
 
-program :help, 'Exit Status', EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "    #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
+program :help, 'Exit Status', "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
+
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
@@ -32,12 +34,12 @@ global_option '-V', '--verbose', 'Enable verbose output'
 global_option('-f', '--file FILE', 'Determine the file that holds the store'){|file|
   store_file = file
 }
-global_option '-g', '--gui', 'Request the master password using an OS-specific GUI'
+global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog'
 
 command :init do |c|
   c.syntax = "#{program(:name)} init"
   c.summary = 'Initializes a new store'
-  c.description = 'This command initializes a new password store. The master password will be read from STDIN. Empty passwords will not be accepted.'
+  c.description = 'This command initializes a new password store. Password quality is enforced using validation rules.'
   c.example "Initializes a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
   c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.option '--force', 'Force-overwrite an existing store file'
@@ -51,11 +53,11 @@ command :init do |c|
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue StandardError => e
-        STDERR.puts "Error: Master password #{$!}"
-        true # means 'continue the loop'
+        STDERR.puts "Error: Master password #{$!}."
+        options.gui # only continue the loop when in gui mode
       end
 
-      # Ask for password confimation if running in interactive mode (terminal)
+      # Ask for password confirmation if running in interactive mode (terminal)
       if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
         exit_with(:passwords_dont_match, options.verbose)
       end

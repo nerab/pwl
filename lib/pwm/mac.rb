@@ -9,7 +9,7 @@ module Pwm
         result = super.split
 
         if 0 == result[0].to_i - 1
-          result[1].chomp
+          result[1] ? result[1].chomp : ''
         else
           raise Cancelled.new(result[0].to_i - 1)
         end

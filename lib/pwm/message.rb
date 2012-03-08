@@ -39,10 +39,6 @@ module Pwm
       super(template, exit_code, default_replacements)
     end
 
-    def to_s(replacements = {})
-      "Error: #{super(replacements)}"
-    end
-
     def error?
       true
     end

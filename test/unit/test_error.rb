@@ -12,11 +12,11 @@ class TestError < Test::Unit::TestCase
   end
 
   def test_to_s
-    assert_equal('Error: Mislav Marohnic', @message.to_s(:first => "Mislav", "last" => "Marohnic"))
+    assert_equal('Mislav Marohnic', @message.to_s(:first => "Mislav", "last" => "Marohnic"))
   end
 
   def test_to_s_empty
-    assert_equal('Error: FIRSTNAME LASTNAME', @message.to_s)
+    assert_equal('FIRSTNAME LASTNAME', @message.to_s)
   end
 
   def test_code
@@ -24,6 +24,6 @@ class TestError < Test::Unit::TestCase
   end
 
   def test_to_s_extra
-    assert_equal('Error: Apu Nahasapeemapetilon', @message.to_s({:first => 'Apu', 'last' => 'Nahasapeemapetilon', :worklocation => 'Kwik-E-Mart'}))
+    assert_equal('Apu Nahasapeemapetilon', @message.to_s({:first => 'Apu', 'last' => 'Nahasapeemapetilon', :worklocation => 'Kwik-E-Mart'}))
   end
 end
