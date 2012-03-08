@@ -26,15 +26,25 @@ module Pwm
     
     extend self
     
-    def password_dialog
-      PLATFORM_PASSWORD_DIALOGS[gui_platform] || ConsolePasswordDialog
+    class Password
+      class << self
+        # Factory method that creates a new password dialog that suits the current GUI platform. 
+        # If no implementation was found for the current platform, a ConsolePasswordDialog is returned.
+        def new(title, prompt)
+          (PLATFORM_PASSWORD_DIALOGS[Dialog.gui_platform] || ConsolePasswordDialog).new(title, prompt)
+        end
+      end
     end
 
-    def text_dialog
-      PLATFORM_TEXT_DIALOGS[gui_platform] || ConsoleTextDialog
+    class Text
+      class << self
+        # Factory method that creates a new text (input) dialog that suits the current GUI platform. 
+        # If no implementation was found for the current platform, a ConsoleTextDialog is returned.
+        def new(title, prompt)
+          (PLATFORM_TEXT_DIALOGS[Dialog.gui_platform] || ConsoleTextDialog).new(title, prompt)
+        end
+      end
     end
-    
-    private
     
     def gui_platform
       if ENV['GDMSESSION']

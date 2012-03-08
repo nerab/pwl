@@ -121,11 +121,11 @@ command :put do |c|
 end
 
 def get_password(prompt, gui = false)
-  (gui ? Pwm::Dialog.password_dialog.new(program(:name), prompt) : Pwm::Dialog::ConsolePasswordDialog.new(prompt)).get_input
+  (gui ? Pwm::Dialog::Password.new(program(:name), prompt) : Pwm::Dialog::ConsolePasswordDialog.new(prompt)).get_input
 end
 
 def get_text(prompt, gui = false)
-  (gui ? Pwm::Dialog.text_dialog.new(program(:name), prompt) : Pwm::Dialog::ConsoleTextDialog.new(prompt)).get_input
+  (gui ? Pwm::Dialog::Text.new(program(:name), prompt) : Pwm::Dialog::ConsoleTextDialog.new(prompt)).get_input
 end
 
 def validate!(pwd)

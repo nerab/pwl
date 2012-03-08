@@ -6,7 +6,7 @@ module Pwm
     class Cancelled < StandardError;end
 
     #
-    # Base class for dialogs. At this point, only password entry dialogs are implemented.
+    # Base class for dialogs
     #
     class BaseDialog
       attr_reader :title, :prompt
