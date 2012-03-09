@@ -1,6 +1,6 @@
 module Pwm
   module Dialog
-    class MacOSDialog < SystemDialog
+    class CocoaDialog < SystemDialog
       #
       # CocoaDialog returns two lines. The first line contains the number of the button, and the second line contains
       # the actual user input. This method amends the base method with handling the two lines.
@@ -16,6 +16,7 @@ module Pwm
       end
 
       protected
+      
       #
       # Attempt to find an app within the user's home. If it doesn't exist, an attempt is made to find a system-installed file.
       #
@@ -27,19 +28,28 @@ module Pwm
         raise AppNotFoundError.new("Could not find the CocoaDialog app. Maybe it is not installed?")
       end
       
+      #
+      # Return the generic command that is common for all dialogs deriving from this class.
+      #
+      # Derived classes are expected to implement the +type+ method that should return
+      #
+      def command
+        "#{local_app_name} #{type} --title \"#{title}\" --informative-text \"#{prompt}\""
+      end
+      
       private
       APP_NAME = "Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog"
     end
     
-    class MacOSTextDialog < MacOSDialog
-      def command
-        "#{local_app_name} standard-inputbox --title \"#{title}\" --informative-text \"#{prompt}\""
+    class CocoaTextDialog < CocoaDialog
+      def type
+        'standard-inputbox'
       end
     end
     
-    class MacOSPasswordDialog < MacOSDialog
-      def command
-        "#{local_app_name} secure-standard-inputbox --title \"#{title}\" --informative-text \"#{prompt}\""
+    class CocoaPasswordDialog < CocoaDialog
+      def type
+        'secure-standard-inputbox'
       end
     end
   end

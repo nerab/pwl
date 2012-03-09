@@ -2,7 +2,7 @@ require 'highline'
 
 module Pwm
   module Dialog
-    class ConsoleBaseDialog < BaseDialog
+    class ConsoleDialog < Base
       def initialize(prompt)
         super(nil, prompt)
         @dialog = HighLine.new(STDIN, STDERR)
@@ -12,7 +12,7 @@ module Pwm
       attr_reader :dialog
     end
     
-    class ConsolePasswordDialog < ConsoleBaseDialog
+    class ConsolePasswordDialog < ConsoleDialog
       def initialize(prompt = 'Please enter the master password:')
         super(prompt)
       end
@@ -26,7 +26,7 @@ module Pwm
       end
     end
     
-    class ConsoleTextDialog < ConsoleBaseDialog
+    class ConsoleTextDialog < ConsoleDialog
       def get_input
         begin
           STDIN.tty? ? @dialog.ask(prompt) : STDIN.read.chomp

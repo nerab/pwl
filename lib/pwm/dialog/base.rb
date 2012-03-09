@@ -8,7 +8,7 @@ module Pwm
     #
     # Base class for dialogs
     #
-    class BaseDialog
+    class Base
       attr_reader :title, :prompt
 
       #
@@ -22,7 +22,7 @@ module Pwm
     #
     # Base class for dialogs implemented by executing a system command.
     #
-    class SystemDialog < BaseDialog
+    class SystemDialog < Base
       def get_input
         out, err, rc = Open3.capture3(command)
         raise Cancelled.new(rc.exitstatus) unless 0 == rc.exitstatus

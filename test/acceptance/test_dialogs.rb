@@ -1,0 +1,1 @@
+# Pwm::Dialog::Password.new(program(:name), prompt)
