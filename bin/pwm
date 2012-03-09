@@ -31,7 +31,7 @@ store_file = DEFAULT_STORE_FILE
 
 global_option '-V', '--verbose', 'Enable verbose output'
 global_option('-f', '--file FILE', 'Determine the file that holds the store'){|file| store_file = file}
-global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog'
+global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
 
 command :init do |c|
   c.syntax = "#{program(:name)} init"
