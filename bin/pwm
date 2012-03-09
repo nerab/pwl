@@ -11,16 +11,17 @@ program :description, "#{program(:name)} is a secure password manager for the co
 
 # TODO Document exit codes in help text
 EXIT_CODES = {
-  :success              => Pwm::Message.new('Success.'),
-  :aborted              => Pwm::Message.new('Aborted by user.', 1),
-  :passwords_dont_match => Pwm::ErrorMessage.new('Passwords do not match.', 2),
-  :no_value_found       => Pwm::Message.new('No value found for <%= key %>.', 3, :key => 'KEY'),
-  :file_exists          => Pwm::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
-  :file_not_found       => Pwm::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
-  :key_blank            => Pwm::ErrorMessage.new('Name may not be blank.', 6),
-  :value_blank          => Pwm::ErrorMessage.new('Value may not be blank.', 7),
-  :list_empty           => Pwm::Message.new('List is empty.', 8),
-  :list_empty_filter    => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
+  :success               => Pwm::Message.new('Success.'),
+  :aborted               => Pwm::Message.new('Aborted by user.', 1),
+  :passwords_dont_match  => Pwm::ErrorMessage.new('Passwords do not match.', 2),
+  :no_value_found        => Pwm::Message.new('No value found for <%= key %>.', 3, :key => 'KEY'),
+  :file_exists           => Pwm::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
+  :file_not_found        => Pwm::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
+  :key_blank             => Pwm::ErrorMessage.new('Name may not be blank.', 6),
+  :value_blank           => Pwm::ErrorMessage.new('Value may not be blank.', 7),
+  :list_empty            => Pwm::Message.new('List is empty.', 8),
+  :list_empty_filter     => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
+  :validation_new_failed => Pwm::ErrorMessage.new('New master password is not valid: <%= message %>.', 11, :message => 'REASON'),
 }
 
 program :help, 'Exit Status', "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
@@ -61,12 +62,12 @@ command :init do |c|
       if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
         exit_with(:passwords_dont_match, options.verbose)
       end
-
-      Pwm::Store.new(store_file, master_password, {:force => options.force})
-      STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
     rescue Pwm::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
+
+    Pwm::Store.new(store_file, master_password, {:force => options.force})
+    STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
   end
 end
 
@@ -173,27 +174,35 @@ command :passwd do |c|
     begin
       store = Pwm::Store.open(store_file, get_password('Enter current master password:', options.gui))
 
-      begin
-        new_master_password = get_password('Enter new master password:', options.gui)
-      end while begin
-        validate!(new_master_password)
-      rescue StandardError => e
-        STDERR.puts "Error: Master password #{e}."
-        options.gui # only continue the loop when in gui mode
+      if !STDIN.tty? && !options.gui
+        # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
+        begin
+          new_master_password =  validate!(args[0])
+        rescue StandardError => e
+          exit_with(:validation_new_failed, options.verbose, :message => e.message)
+        end
+      else
+        # If running interactively (console or gui), we loop until we get a valid password or break
+        begin
+          new_master_password = get_password('Enter new master password:', options.gui)
+        end while begin
+          validate!(new_master_password)
+        rescue StandardError => e
+          STDERR.puts "Error: New master password #{e}."
+          options.gui # only continue the loop when in gui mode
+        end
+
+        # Confirm new password
+        if STDIN.tty? && new_master_password != get_password('Enter new master password again:', options.gui)
+          exit_with(:passwords_dont_match, options.verbose)
+        end
       end
-
-      # TODO If we are in a pipe and do not run in GUI mode, we expect the new password as args[0]
-
-      # Ask for password confirmation if running in interactive mode (terminal)
-      if STDIN.tty? && new_master_password != get_password('Enter new master password again:', options.gui)
-        exit_with(:passwords_dont_match, options.verbose)
-      end
-
-      store.change_password!(new_master_password)
-      STDERR.puts "Successfully changed master password." if options.verbose
     rescue Pwm::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
+
+    store.change_password!(new_master_password)
+    STDERR.puts "Successfully changed master password." if options.verbose
   end
 end
 
@@ -218,9 +227,10 @@ end
 
 def validate!(pwd)
   # Validations go from simple to more complicated
-  raise "may not be blank" if pwd.empty?
-  raise "must have at least eight characters" if 8 > pwd.length
-  raise "must contain at least one integer" unless pwd =~ /.*\d/
-  raise "at least one character either (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
-  raise "special characters are only allowed if ASCII values 20 to 7E" unless pwd =~ /[\x20-\x7E]/
+  raise "May not be blank" if pwd.blank?
+  raise "Must have at least eight characters" if 8 > pwd.length
+  raise "Must contain at least one integer" unless pwd =~ /.*\d/
+  raise "Must contain at least one character (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
+  raise "Special characters are only allowed if ASCII value is between 0x20 and 0x7E" unless pwd =~ /[\x20-\x7E]/
+  pwd
 end

@@ -35,7 +35,7 @@ module Test
       end
 
       def store_password
-        's3cret'
+        's3cret passw0rd'
       end
 
       # Make up a name of a file that does not exist in ENV['TMPDIR'] yet

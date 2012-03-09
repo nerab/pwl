@@ -44,4 +44,13 @@ class TestStoreCRUD < Test::Pwm::TestCase
       assert_equal(test_vector[key], store.get(key))
     }
   end
+
+  def test_list_filter
+    test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
+    test_vector.each{|k,v| store.put(k, v)}
+
+    filter = 'foo bar'
+    expected = test_vector.keys.select{|k,v| k =~ /#{filter}/}
+    assert_equal(expected, store.list(filter))
+  end
 end
