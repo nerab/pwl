@@ -152,6 +152,19 @@ module Pwm
     end
 
     #
+    # Delete the value that is stored under key and return it
+    #
+    def delete(key)
+      raise BlankKeyError if key.blank?
+      @backend.transaction{
+        timestamp!(:last_modified)
+        old_value = @backend[:user].delete(encrypt(key))
+        raise KeyNotFoundError.new(key) unless old_value
+        decrypt(old_value)
+      }
+    end
+
+    #
     # Return all keys, optionally filtered by filter.
     #
     def list(filter = nil)

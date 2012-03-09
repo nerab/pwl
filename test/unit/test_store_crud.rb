@@ -53,4 +53,29 @@ class TestStoreCRUD < Test::Pwm::TestCase
     expected = test_vector.keys.select{|k,v| k =~ /#{filter}/}
     assert_equal(expected, store.list(filter))
   end
+  
+  def test_delete
+    store.put('foo', 'bar')
+    assert_equal('bar', store.delete('foo'))
+    
+    assert_raise Pwm::Store::KeyNotFoundError do
+      store.get('foo')
+    end
+  end
+  
+  def test_delete_blank
+    assert_raise Pwm::Store::BlankKeyError do
+      store.delete('')
+    end
+
+    assert_raise Pwm::Store::BlankKeyError do
+      store.delete(nil)
+    end
+  end
+
+  def test_delete_unknown_key
+    assert_raise Pwm::Store::KeyNotFoundError do
+      store.delete('foo')
+    end
+  end
 end
