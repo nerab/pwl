@@ -157,7 +157,7 @@ command :put do |c|
     end
 
     store.put(args[0], value)
-    STDERR.puts "Successfully stored #{args[1]} under  #{args[0]}." if options.verbose
+    STDERR.puts "Successfully stored new value under #{args[0]}." if options.verbose
   end
 end
 
