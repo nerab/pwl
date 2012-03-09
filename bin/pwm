@@ -160,6 +160,26 @@ command :put do |c|
   end
 end
 
+command :delete do |c|
+  c.syntax = "#{program(:name)} delete NAME"
+  c.summary = 'Deletes the entry stored under NAME'
+  c.description = 'Deletes the complete entry that is stored under NAME. If NAME is not present in the store, an error will thrown.'
+  c.example 'Deletes what was stored under the name "foo"', "#{program(:name)} #{c.name} foo"
+  c.action do |args, options|
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
+
+    begin
+      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
+    rescue Pwm::Dialog::Cancelled
+      exit_with(:aborted, options.verbose)
+    end
+
+    store.delete(args[0])
+    STDERR.puts "Successfully deleted the value under #{args[0]}." if options.verbose
+  end
+end
+
 command :passwd do |c|
   c.syntax = "#{program(:name)} passwd [NEW_MASTER_PASSWORD]"
   c.summary = 'Changes the master password to NEW_MASTER_PASSWORD.'
