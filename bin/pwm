@@ -20,11 +20,10 @@ EXIT_CODES = {
   :value_blank           => Pwm::ErrorMessage.new('Value may not be blank.', 7),
   :list_empty            => Pwm::Message.new('List is empty.', 8),
   :list_empty_filter     => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
-  :validation_new_failed => Pwm::ErrorMessage.new('<%= message %>.', 11, :message => 'REASON'),
+  :validation_new_failed => Pwm::ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
 }
 
-program :help, 'Exit Status', "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
-
+program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
@@ -51,7 +50,7 @@ command :init do |c|
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue Pwm::InvalidMasterPasswordError => e
-        STDERR.puts e.message # TODO Show GUI error message if options.gui
+        STDERR.puts e.message
         options.gui || STDIN.tty? # only continue the loop when in interactive mode
       end
 
@@ -177,7 +176,7 @@ command :passwd do |c|
 
         begin
           validate!(new_master_password)
-        rescue StandardError => e
+        rescue Pwm::InvalidMasterPasswordError => e
           exit_with(:validation_new_failed, options.verbose, :message => e.message)
         end
       else
@@ -187,12 +186,12 @@ command :passwd do |c|
         end while begin
           validate!(new_master_password)
         rescue Pwm::InvalidMasterPasswordError => e
-          STDERR.puts e.message # TODO Show GUI error message if options.gui
+          STDERR.puts e.message
           options.gui || STDIN.tty? # only continue the loop when in interactive mode
         end
 
         # Confirm new password
-        if STDIN.tty? && new_master_password != get_password('Enter new master password again:', options.gui)
+        if new_master_password != get_password('Enter new master password again:', options.gui)
           exit_with(:passwords_dont_match, options.verbose)
         end
       end
