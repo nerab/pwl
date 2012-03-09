@@ -16,5 +16,6 @@ class TestPasswd < Test::Pwm::AppTestCase
     assert_error('The master password is wrong', 'list')
 
     # re-open with the changed password
+#    assert_successful('', '')
   end
 end

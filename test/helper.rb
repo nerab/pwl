@@ -52,22 +52,22 @@ module Test
 
       protected
 
-      def assert_successful(expected_out, cmd)
+      def assert_successful(expected_out, cmd, password = store_password)
         out, err, rc = execute(cmd)
         assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
         assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
         assert(out =~ /#{expected_out}/, "'#{out}' did not match expected response '#{expected_out}'")
       end
 
-      def assert_error(expected_err, cmd)
+      def assert_error(expected_err, cmd, password = store_password)
         out, err, rc = execute(cmd)
         assert_not_equal(0, rc.exitstatus, "Expected non-zero exit status, but it was #{rc.exitstatus}. STDOUT was: #{out}")
         assert(out.empty?, "Expected empty STDOUT, but it yielded #{out}")
         assert(err =~ /#{expected_err}/, "'#{err}' did not match expected response '#{expected_err}'")
       end
 
-      def execute(cmd)
-        Open3.capture3("echo #{store_password} | #{APP} #{cmd} --file #{store_file}")
+      def execute(cmd, password = store_password)
+        Open3.capture3("echo #{password} | #{APP} #{cmd} --file #{store_file}")
       end
     end
   end

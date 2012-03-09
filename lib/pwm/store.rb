@@ -53,6 +53,8 @@ module Pwm
     class << self
       alias_method :load, :new
 
+      DEFAULT_PASSWORD_POLICY = MinimumComplexityPasswordPolicy.new
+
       #
       # Constructs a new store (not only the object, but also the file behind it).
       #
@@ -60,6 +62,7 @@ module Pwm
         if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file
           raise FileAlreadyExistsError.new(file)
         else
+          password_policy.validate!(master_password)
           store = load(file, master_password)
           store.reset!
         end
@@ -75,6 +78,14 @@ module Pwm
         store = load(file, master_password)
         store.authenticate # do not allow openeing without successful authentication
         store
+      end
+
+      def password_policy
+        @password_policy || DEFAULT_PASSWORD_POLICY
+      end
+
+      def password_policy=(policy)
+        @password_policy = policy
       end
     end
 
@@ -154,12 +165,14 @@ module Pwm
         end
       }
     end
-    
+
     #
     # Change the master password to +new_master_password+. Note that we don't take a password confirmation here.
     # This is up to a UI layer.
     #
     def change_password!(new_master_password)
+      self.class.password_policy.validate!(new_master_password)
+
       @backend.transaction{
         # Decrypt each key and value with the old master password and encrypt them with the new master password
         copy = {}
@@ -211,7 +224,7 @@ module Pwm
     def timestamp!(sym)
       @backend[:system][sym] = DateTime.now
     end
-    
+
     #
     # Return the encrypted +value+ (uses the current master password)
     #

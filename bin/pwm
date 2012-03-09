@@ -9,7 +9,6 @@ require 'pwm'
 program :version, Pwm::VERSION
 program :description, "#{program(:name)} is a secure password manager for the command line."
 
-# TODO Document exit codes in help text
 EXIT_CODES = {
   :success               => Pwm::Message.new('Success.'),
   :aborted               => Pwm::Message.new('Aborted by user.', 1),
@@ -21,7 +20,7 @@ EXIT_CODES = {
   :value_blank           => Pwm::ErrorMessage.new('Value may not be blank.', 7),
   :list_empty            => Pwm::Message.new('List is empty.', 8),
   :list_empty_filter     => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
-  :validation_new_failed => Pwm::ErrorMessage.new('New master password is not valid: <%= message %>.', 11, :message => 'REASON'),
+  :validation_new_failed => Pwm::ErrorMessage.new('<%= message %>.', 11, :message => 'REASON'),
 }
 
 program :help, 'Exit Status', "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
@@ -54,7 +53,7 @@ command :init do |c|
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue StandardError => e
-        STDERR.puts "Error: Master password #{$!}."
+        STDERR.puts e.message
         options.gui # only continue the loop when in gui mode
       end
 
@@ -176,8 +175,10 @@ command :passwd do |c|
 
       if !STDIN.tty? && !options.gui
         # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
+        new_master_password = args[0]
+
         begin
-          new_master_password =  validate!(args[0])
+          validate!(new_master_password)
         rescue StandardError => e
           exit_with(:validation_new_failed, options.verbose, :message => e.message)
         end
@@ -226,11 +227,6 @@ def get_text(prompt, gui = false)
 end
 
 def validate!(pwd)
-  # Validations go from simple to more complicated
-  raise "May not be blank" if pwd.blank?
-  raise "Must have at least eight characters" if 8 > pwd.length
-  raise "Must contain at least one integer" unless pwd =~ /.*\d/
-  raise "Must contain at least one character (lower or upper case)" unless pwd =~ /.*([a-z]|[A-Z])/
-  raise "Special characters are only allowed if ASCII value is between 0x20 and 0x7E" unless pwd =~ /[\x20-\x7E]/
+  Pwm::Store.password_policy.validate!(pwd)
   pwd
 end

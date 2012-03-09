@@ -2,13 +2,6 @@ require 'helper'
 
 class TestInit < Test::Pwm::AppTestCase
   #
-  # Tests that init creates a valid store
-  #
-  def test_init
-    # TODO
-  end
-
-  #
   # Tests that initing with two passwords that don't match fails
   #
   def test_init_unmatching_passwords
