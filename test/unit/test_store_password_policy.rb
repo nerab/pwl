@@ -54,7 +54,7 @@ class TestStorePasswordPolicy < Test::Pwm::TestCase
   end
 
   def assert_invalid(password)
-    assert_raise Pwm::Store::InvalidMasterPasswordError do
+    assert_raise Pwm::InvalidMasterPasswordError do
       assert_valid(password)
     end
   end
