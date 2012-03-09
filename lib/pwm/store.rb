@@ -53,7 +53,7 @@ module Pwm
     class << self
       alias_method :load, :new
 
-      DEFAULT_PASSWORD_POLICY = MinimumComplexityPasswordPolicy.new
+      DEFAULT_PASSWORD_POLICY = ReasonableComplexityPasswordPolicy.new
 
       #
       # Constructs a new store (not only the object, but also the file behind it).

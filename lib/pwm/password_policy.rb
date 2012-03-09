@@ -18,7 +18,7 @@ module Pwm
     end
   end
 
-  class MinimumComplexityPasswordPolicy
+  class ReasonableComplexityPasswordPolicy
     def validate!(pwd)
       raise InvalidMasterPasswordError.new("May not be blank") if pwd.blank?
       raise InvalidMasterPasswordError.new("Must have at least eight characters") if 8 > pwd.length
