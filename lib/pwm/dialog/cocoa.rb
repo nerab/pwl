@@ -6,17 +6,18 @@ module Pwm
       # the actual user input. This method amends the base method with handling the two lines.
       #
       def get_input
-        result = super.split
-        
-        if result && 2 == result.size && 0 == result[0].to_i - 1
-          result[1].chomp
-        else
-          raise Cancelled.new(result[0].to_i - 1)
+        result = super.lines.to_a
+        result = [] if result.blank?
+
+        case result.size
+          when 1 then return_or_cancel(result[0], '')
+          when 2 then return_or_cancel(result[0], result[1].chomp)
+          else raise "Unknown response from running '#{command}'"
         end
       end
 
       protected
-      
+
       #
       # Attempt to find an app within the user's home. If it doesn't exist, an attempt is made to find a system-installed file.
       #
@@ -27,7 +28,7 @@ module Pwm
         }
         raise AppNotFoundError.new("Could not find the CocoaDialog app. Maybe it is not installed?")
       end
-      
+
       #
       # Return the generic command that is common for all dialogs deriving from this class.
       #
@@ -36,17 +37,27 @@ module Pwm
       def command
         "#{local_app_name} #{type} --title \"#{title}\" --informative-text \"#{prompt}\""
       end
-      
+
       private
       APP_NAME = "Applications/CocoaDialog.app/Contents/MacOS/CocoaDialog"
+
+      def return_or_cancel(statusLine, resultLine)
+        status = statusLine.to_i - 1
+
+        if 0 == status
+          resultLine
+        else
+          raise Cancelled.new(status)
+        end
+      end
     end
-    
+
     class CocoaTextDialog < CocoaDialog
       def type
         'standard-inputbox'
       end
     end
-    
+
     class CocoaPasswordDialog < CocoaDialog
       def type
         'secure-standard-inputbox'
