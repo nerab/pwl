@@ -47,6 +47,11 @@ Security
 ========
 When it comes to securing passwords, pwm does not make any compromises. It relies on the proven OpenSSL library for all encryption functions via the [Encryptor](https://github.com/shuber/encryptor) wrapper. The password store itself is a Ruby [PStore](http://ruby-doc.org/stdlib/libdoc/pstore/rdoc/PStore.html). All names and values are individually encrypted with the master password.
 
+Code security is enforced with two major concepts:
+
+1. The complete source code of pwm, and all libraries it uses, are open source. Therefore, everyone can freely inspect the complete source code of pwm, run penetration tests, etc.
+1. Nearly 100% of pwm's code is covered by unit and acceptance tests. All tests are re-run whenever new code is pushed to the public git repository. All build and test results are published with the help of [Travis CI](http://travis-ci.org/nerab/pwm).
+
 Integration
 ===========
 When invoked on a console, pwm will ask for the master password to be typed into the console (using the [HighLine](http://highline.rubyforge.org) library). pwm also behaves well when run in a pipe. You can pipe the master password into pwm. Similarly, instead of printing the retrieved password to the console, pwm's output can be used as input for yet another program.For instance, the popular request for copying a password to the clipboard can be achieved by piping pwm's output into a clipboard application that reads from STDIN, e.g. pbcopy (Mac), xclip (Linux), clip (Windows >= Vista), putclip (cygwin).
