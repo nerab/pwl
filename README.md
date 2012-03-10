@@ -66,6 +66,25 @@ Or, if you prefer to enter the master password via a regular dialog box, you can
 
 By calling this line, the password stored under nerab@example.com is copied to the clipboard.
 
+Backup & Restore
+================
+* Backup: Copy ~/.pwm.pstore (or whatever you pass in with --file) to a safe place.
+* Restore: Replace ~/.pwm.pstore (or whatever you pass in with --file) with the version you kept in a safe place.
+
+Export and Printing
+===================
+pwm provides a simple export into the HTML format with the following command:
+
+    pwm export
+
+This will print raw HTML markup on STDOUT, so it can be written into a file
+
+    pwm export > my_passwords.html
+    
+and then viewed and printed with a browser. With [bcat](http://rtomayko.github.com/bcat/) the export can be directly piped into a browser:
+
+    pwm export | bcat
+
 Contributing to pwm
 ===================
 
