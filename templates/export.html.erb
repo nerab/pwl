@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>pwd export</title>
+  <style type="text/css">
+    table { page-break-inside:auto }
+    tr    { page-break-inside:avoid; page-break-after:auto }
+    thead { display:table-header-group }
+    tfoot { display:table-footer-group }
+  </style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Value</th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr>
+        <td>Exported from pwm</td>
+        <td>Last modified: <%= store.last_modified.strftime('%F') rescue 'never' %></td>
+        <td></td>
+      </tr>
+    </tfoot>
+    <tbody>
+      <% store.all.each{|key, value|%>
+      <tr>
+        <td><%= key %></td>
+        <td><%= value %></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</body>
+</html>

@@ -18,6 +18,7 @@ require 'pwm'
 require 'tmpdir'
 
 class Test::Unit::TestCase
+  FIXTURES_DIR = File.join(File.dirname(__FILE__), 'fixtures')
 end
 
 module Test
@@ -68,6 +69,10 @@ module Test
 
       def execute(cmd, password)
         Open3.capture3("echo \"#{password}\" | #{APP} #{cmd} --file \"#{store_file}\"")
+      end
+  
+      def fixture(name)
+        File.read(File.join(FIXTURES_DIR, name))
       end
     end
   end

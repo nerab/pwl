@@ -45,6 +45,15 @@ class TestStoreCRUD < Test::Pwm::TestCase
     }
   end
 
+  def test_all
+    test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
+    test_vector.each{|k,v| store.put(k, v)}
+    assert_equal(test_vector, store.all)
+    store.all.each{|k,v|
+      assert_equal(test_vector[k], v)
+    }
+  end
+
   def test_list_filter
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
     test_vector.each{|k,v| store.put(k, v)}

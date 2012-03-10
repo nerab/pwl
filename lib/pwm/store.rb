@@ -165,7 +165,7 @@ module Pwm
     end
 
     #
-    # Return all keys, optionally filtered by filter.
+    # Return all keys, optionally filtered by filter
     #
     def list(filter = nil)
       @backend.transaction(true){
@@ -177,6 +177,17 @@ module Pwm
           result.select{|k,v| k =~ /#{filter}/}
         end
       }
+    end
+
+    #
+    # Return all entries
+    #
+    def all
+      result = {}
+      @backend.transaction(true){
+        @backend[:user].each{|k,v| result[decrypt(k)] = decrypt(v)}
+      }
+      result
     end
 
     #

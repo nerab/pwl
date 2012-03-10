@@ -27,6 +27,8 @@ program :help, 'Exit Status',  "#{program(:name)} sets the following exit status
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
+DEFAULT_EXPORT_TEMPLATE = File.join(File.dirname(__FILE__), *%w[.. templates export.html.erb])
+
 store_file = DEFAULT_STORE_FILE
 
 global_option '-V', '--verbose', 'Enable verbose output'
@@ -34,7 +36,7 @@ global_option('-f', '--file FILE', 'Determine the file that holds the store'){|f
 global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
 
 command :init do |c|
-  c.syntax = "#{program(:name)} init"
+  c.syntax = "#{program(:name)} #{c.name}"
   c.summary = 'Initializes a new store'
   c.description = 'This command initializes a new password store. Password quality is enforced using validation rules.'
   c.example "Initializes a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
@@ -68,7 +70,7 @@ command :init do |c|
 end
 
 command :get do |c|
-  c.syntax = "#{program(:name)} get NAME"
+  c.syntax = "#{program(:name)} #{c.name} NAME"
   c.summary = 'Retrieves the value for NAME and prints it to STDOUT.'
   c.description = 'This command retrieves the value stored under NAME and prints it on STDOUT.'
   c.example 'Reads the value stored under the name "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
@@ -91,7 +93,7 @@ command :get do |c|
 end
 
 command :list do |c|
-  c.syntax = "#{program(:name)} list [FILTER]"
+  c.syntax = "#{program(:name)} #{c.name} [FILTER]"
   c.summary = 'Lists all names with optional FILTER.'
   c.description = 'This command prints all names to STDOUT. If present, only those names matching FILTER will be returned.'
   c.example 'Prints all names', "#{program(:name)} #{c.name}"
@@ -122,7 +124,7 @@ command :list do |c|
 end
 
 command :put do |c|
-  c.syntax = "#{program(:name)} put NAME [VALUE]"
+  c.syntax = "#{program(:name)} #{c.name} NAME [VALUE]"
   c.summary = 'Stores VALUE under NAME'
   c.description = 'Adds or updates the entry stored under NAME. If NAME is already present in the store, it will be updated with VALUE. If NAME is not already present in the store, a new entry will be created. If VALUE is not given, it will be read from STDIN.'
   c.example 'Stores the value "bar" under the name "foo"', "#{program(:name)} #{c.name} foo bar"
@@ -161,7 +163,7 @@ command :put do |c|
 end
 
 command :delete do |c|
-  c.syntax = "#{program(:name)} delete NAME"
+  c.syntax = "#{program(:name)} #{c.name} NAME"
   c.summary = 'Deletes the entry stored under NAME'
   c.description = 'Deletes the complete entry that is stored under NAME. If NAME is not present in the store, an error will thrown.'
   c.example 'Deletes what was stored under the name "foo"', "#{program(:name)} #{c.name} foo"
@@ -181,7 +183,7 @@ command :delete do |c|
 end
 
 command :passwd do |c|
-  c.syntax = "#{program(:name)} passwd [NEW_MASTER_PASSWORD]"
+  c.syntax = "#{program(:name)} #{c.name} [NEW_MASTER_PASSWORD]"
   c.summary = 'Changes the master password to NEW_MASTER_PASSWORD.'
   c.description = 'This command changes the master password of the store. Password quality is enforced using validation rules.'
   c.action do |args, options|
@@ -221,6 +223,24 @@ command :passwd do |c|
 
     store.change_password!(new_master_password)
     STDERR.puts "Successfully changed master password." if options.verbose
+  end
+end
+
+command :export do |c|
+  c.syntax = "#{program(:name)} #{c.name}"
+  c.summary = 'Exports all entries.'
+  c.description = 'This command prints all entries to STDOUT.'
+  c.example 'Prints all entries', "#{program(:name)} #{c.name}"
+  c.action do |args, options|
+    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+
+    begin
+      template = ERB.new(File.read(DEFAULT_EXPORT_TEMPLATE))
+      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
+      puts template.result(binding)
+    rescue Pwm::Dialog::Cancelled
+      exit_with(:aborted, options.verbose)
+    end
   end
 end
 
