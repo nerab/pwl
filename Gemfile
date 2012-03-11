@@ -10,6 +10,7 @@ gem 'activesupport'
 group :test do
   gem "rake"
   gem 'simplecov', :require => false
+  gem 'nokogiri-diff'
 end
 
 # Add dependencies to develop your gem here.

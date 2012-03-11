@@ -8,7 +8,7 @@
     tr    { page-break-inside:avoid; page-break-after:auto}
     thead { display:table-header-group}
     tfoot { display:table-footer-group; font-size: 0.85em;}
-    
+
     /* adapted from http://coding.smashingmagazine.com/2008/08/13/top-10-css-table-designs/ */
     body{
       font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
@@ -42,7 +42,7 @@
     <tfoot>
       <tr>
         <td colspan="2">
-          This <a href="http://rdoc.info/github/nerab/pwm/master/frames">pwm</a> export was created on <%= DateTime.now.strftime('%F %R') %>. 
+          This <a href="http://rdoc.info/github/nerab/pwm/master/frames">pwm</a> export was created on <%= DateTime.now.strftime('%F %R') %>.
         <br/>
           The database at <%= store.path %> was <%= "last modified #{store.last_modified.strftime('%F %R')}" rescue 'never modified' %>.
         </td>
@@ -57,5 +57,5 @@
       <% } %>
     </tbody>
   </table>
-  </body>
+</body>
 </html>
