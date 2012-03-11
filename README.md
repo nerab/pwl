@@ -7,6 +7,7 @@ pwm is a secure password manager for the command-line.
 
 Installation
 ============
+pwm is written in [Ruby](http://www.ruby-lang.org/) and can be installed using Ruby's [gem](http://rubygems.org/) package manager:
 
       gem install pwm
 

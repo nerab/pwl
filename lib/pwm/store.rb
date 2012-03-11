@@ -238,6 +238,13 @@ module Pwm
       @backend.transaction(true){@backend[:system][:last_modified]}
     end
 
+    #
+    # Return the path to the file backing this store
+    #
+    def path
+      @backend.path
+    end
+
     private
 
     #
