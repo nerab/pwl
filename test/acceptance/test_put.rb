@@ -1,7 +1,7 @@
 require 'helper'
 
-# Tests `pwm put`
-class TestPut < Test::Pwm::AppTestCase
+# Tests `pwl put`
+class TestPut < Test::Pwl::AppTestCase
   def test_put_blank_key
     assert_error('may not be blank', 'put')
   end

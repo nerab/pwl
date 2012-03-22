@@ -1,7 +1,7 @@
 require 'helper'
 
-# Tests `pwm delete`
-class TestDelete < Test::Pwm::AppTestCase
+# Tests `pwl delete`
+class TestDelete < Test::Pwl::AppTestCase
   def test_delete_blank_key
     assert_error('may not be blank', 'delete')
   end

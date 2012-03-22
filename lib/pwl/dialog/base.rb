@@ -1,6 +1,6 @@
 require 'open3'
 
-module Pwm
+module Pwl
   module Dialog
     class AppNotFoundError < StandardError;end
     class Cancelled < StandardError;end

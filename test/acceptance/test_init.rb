@@ -2,13 +2,13 @@ require 'helper'
 require 'pty'
 require 'expect'
 
-class TestInit < Test::Pwm::AppTestCase
+class TestInit < Test::Pwl::AppTestCase
   #
   # Tests that initing with two matching passwords succeeds
   #
   # A session is expected to look like this:
   #
-  # $ bin/pwm init --force --verbose
+  # $ bin/pwl init --force --verbose
   # Enter new master password:
   # **************
   # Enter master password again:
@@ -17,16 +17,16 @@ class TestInit < Test::Pwm::AppTestCase
   # $
   #
   def test_matching_passwords
-    cmd = "bin/pwm init --force --verbose --file \"#{@store_file}\""
+    cmd = "bin/pwl init --force --verbose --file \"#{@store_file}\""
 
-    PTY.spawn(cmd){|pwm_out, pwm_in, pid|
-      assert_response('Enter new master password:', pwm_out)
-      pwm_in.puts("secr3tPassw0rd")
+    PTY.spawn(cmd){|pwl_out, pwl_in, pid|
+      assert_response('Enter new master password:', pwl_out)
+      pwl_in.puts("secr3tPassw0rd")
 
-      assert_response('Enter master password again:', pwm_out)
-      pwm_in.puts("secr3tPassw0rd")
+      assert_response('Enter master password again:', pwl_out)
+      pwl_in.puts("secr3tPassw0rd")
 
-      assert_response('Successfully initialized new store', pwm_out)
+      assert_response('Successfully initialized new store', pwl_out)
     }
   end
 
@@ -35,7 +35,7 @@ class TestInit < Test::Pwm::AppTestCase
   #
   # A session is expected to look like this (using s3cretPassw0rd at the first and secr3tPassw0rd at the second password prompt):
   #
-  # $ bin/pwm init --force --verbose
+  # $ bin/pwl init --force --verbose
   # Enter new master password:
   # **************
   # Enter master password again:
@@ -44,16 +44,16 @@ class TestInit < Test::Pwm::AppTestCase
   # $
   #
   def test_unmatching_passwords
-    cmd = "bin/pwm init --force --verbose --file \"#{store_file}\""
+    cmd = "bin/pwl init --force --verbose --file \"#{store_file}\""
 
-    PTY.spawn(cmd){|pwm_out, pwm_in, pid|
-      assert_response('Enter new master password:', pwm_out)
-      pwm_in.puts("s3cretPassw0rd")
+    PTY.spawn(cmd){|pwl_out, pwl_in, pid|
+      assert_response('Enter new master password:', pwl_out)
+      pwl_in.puts("s3cretPassw0rd")
 
-      assert_response('Enter master password again:', pwm_out)
-      pwm_in.puts("secr3tPassw0rd")
+      assert_response('Enter master password again:', pwl_out)
+      pwl_in.puts("secr3tPassw0rd")
 
-      assert_response('Passwords do not match\.', pwm_out)
+      assert_response('Passwords do not match\.', pwl_out)
     }
   end
 

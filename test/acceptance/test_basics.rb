@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestBasics < Test::Pwm::AppTestCase
+class TestBasics < Test::Pwl::AppTestCase
   def test_help
     assert_successful('Rabenau', 'help')
   end

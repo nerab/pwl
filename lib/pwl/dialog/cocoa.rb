@@ -1,4 +1,4 @@
-module Pwm
+module Pwl
   module Dialog
     class CocoaDialog < SystemDialog
       #

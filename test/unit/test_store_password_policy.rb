@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestStorePasswordPolicy < Test::Pwm::TestCase
+class TestStorePasswordPolicy < Test::Pwl::TestCase
   def setup
     @store_file = temp_file_name
   end
@@ -48,13 +48,13 @@ class TestStorePasswordPolicy < Test::Pwm::TestCase
   private
 
   def assert_valid(password)
-    store = ::Pwm::Store.new(@store_file, password)
+    store = ::Pwl::Store.new(@store_file, password)
     store.put('foo', 'bar')
     assert_equal('bar', store.get('foo'))
   end
 
   def assert_invalid(password)
-    assert_raise Pwm::InvalidMasterPasswordError do
+    assert_raise Pwl::InvalidMasterPasswordError do
       assert_valid(password)
     end
   end

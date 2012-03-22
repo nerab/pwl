@@ -2,12 +2,12 @@ require 'helper'
 
 class TestError < Test::Unit::TestCase
   def setup
-    @message = Pwm::ErrorMessage.new("<%= first %> <%= last %>", 1, :first => 'FIRSTNAME', :last => 'LASTNAME')
+    @message = Pwl::ErrorMessage.new("<%= first %> <%= last %>", 1, :first => 'FIRSTNAME', :last => 'LASTNAME')
   end
 
   def test_code_0
-    assert_raise Pwm::ReservedMessageCodeError do
-      Pwm::ErrorMessage.new('', 0)
+    assert_raise Pwl::ReservedMessageCodeError do
+      Pwl::ErrorMessage.new('', 0)
     end
   end
 

@@ -4,23 +4,23 @@ require 'rubygems'
 require 'commander/import'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
-require 'pwm'
+require 'pwl'
 
-program :version, Pwm::VERSION
+program :version, Pwl::VERSION
 program :description, "#{program(:name)} is a secure password manager for the command line."
 
 EXIT_CODES = {
-  :success               => Pwm::Message.new('Success.'),
-  :aborted               => Pwm::Message.new('Aborted by user.', 1),
-  :passwords_dont_match  => Pwm::ErrorMessage.new('Passwords do not match.', 2),
-  :no_value_found        => Pwm::Message.new('No value found for <%= name %>.', 3, :name => 'NAME'),
-  :file_exists           => Pwm::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
-  :file_not_found        => Pwm::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
-  :name_blank            => Pwm::ErrorMessage.new('Name may not be blank.', 6),
-  :value_blank           => Pwm::ErrorMessage.new('Value may not be blank.', 7),
-  :list_empty            => Pwm::Message.new('List is empty.', 8),
-  :list_empty_filter     => Pwm::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
-  :validation_new_failed => Pwm::ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
+  :success               => Pwl::Message.new('Success.'),
+  :aborted               => Pwl::Message.new('Aborted by user.', 1),
+  :passwords_dont_match  => Pwl::ErrorMessage.new('Passwords do not match.', 2),
+  :no_value_found        => Pwl::Message.new('No value found for <%= name %>.', 3, :name => 'NAME'),
+  :file_exists           => Pwl::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
+  :file_not_found        => Pwl::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
+  :name_blank            => Pwl::ErrorMessage.new('Name may not be blank.', 6),
+  :value_blank           => Pwl::ErrorMessage.new('Value may not be blank.', 7),
+  :list_empty            => Pwl::Message.new('List is empty.', 8),
+  :list_empty_filter     => Pwl::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
+  :validation_new_failed => Pwl::ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
 }
 
 program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
@@ -51,7 +51,7 @@ command :init do |c|
         master_password = get_password('Enter new master password:', options.gui)
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
-      rescue Pwm::InvalidMasterPasswordError => e
+      rescue Pwl::InvalidMasterPasswordError => e
         STDERR.puts e.message
         options.gui || STDIN.tty? # only continue the loop when in interactive mode
       end
@@ -60,11 +60,11 @@ command :init do |c|
       if STDIN.tty? && master_password != get_password('Enter master password again:', options.gui)
         exit_with(:passwords_dont_match, options.verbose)
       end
-    rescue Pwm::Dialog::Cancelled
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
 
-    Pwm::Store.new(store_file, master_password, {:force => options.force})
+    Pwl::Store.new(store_file, master_password, {:force => options.force})
     STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
   end
 end
@@ -80,13 +80,13 @@ command :get do |c|
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
+      result = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
       if result.blank?
         exit_with(:no_value_found, options.verbose, :name => args[0])
       else
         puts result
       end
-    rescue Pwm::Dialog::Cancelled
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
   end
@@ -107,7 +107,7 @@ command :list do |c|
     options.default :separator => ' '
 
     begin
-      result = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
+      result = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
       if !result.blank?
         puts result
       else
@@ -117,7 +117,7 @@ command :list do |c|
           exit_with(:list_empty, options.verbose)
         end
       end
-    rescue Pwm::Dialog::Cancelled
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
   end
@@ -135,8 +135,8 @@ command :put do |c|
 
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
-      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
-    rescue Pwm::Dialog::Cancelled
+      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
 
@@ -147,7 +147,7 @@ command :put do |c|
 
       begin
         value = get_text("Enter value for name '#{args[0]}':", options.gui)
-      rescue Pwm::Dialog::Cancelled
+      rescue Pwl::Dialog::Cancelled
         exit_with(:aborted, options.verbose)
       end
 
@@ -172,8 +172,8 @@ command :delete do |c|
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
-    rescue Pwm::Dialog::Cancelled
+      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
 
@@ -190,7 +190,7 @@ command :passwd do |c|
     exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
 
     begin
-      store = Pwm::Store.open(store_file, get_password('Enter current master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password('Enter current master password:', options.gui))
 
       if !STDIN.tty? && !options.gui
         # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
@@ -198,7 +198,7 @@ command :passwd do |c|
 
         begin
           validate!(new_master_password)
-        rescue Pwm::InvalidMasterPasswordError => e
+        rescue Pwl::InvalidMasterPasswordError => e
           exit_with(:validation_new_failed, options.verbose, :message => e.message)
         end
       else
@@ -207,7 +207,7 @@ command :passwd do |c|
           new_master_password = get_password('Enter new master password:', options.gui)
         end while begin
           validate!(new_master_password)
-        rescue Pwm::InvalidMasterPasswordError => e
+        rescue Pwl::InvalidMasterPasswordError => e
           STDERR.puts e.message
           options.gui || STDIN.tty? # only continue the loop when in interactive mode
         end
@@ -217,7 +217,7 @@ command :passwd do |c|
           exit_with(:passwords_dont_match, options.verbose)
         end
       end
-    rescue Pwm::Dialog::Cancelled
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
 
@@ -236,9 +236,9 @@ command :export do |c|
 
     begin
       template = ERB.new(File.read(DEFAULT_EXPORT_TEMPLATE))
-      store = Pwm::Store.open(store_file, get_password('Enter master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
       puts template.result(binding)
-    rescue Pwm::Dialog::Cancelled
+    rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
   end
@@ -256,13 +256,13 @@ def exit_with(error_code, verbose, msg_args = {})
 end
 
 def get_password(prompt, gui = false)
-  (gui ? Pwm::Dialog::Password.new(program(:name), prompt) : Pwm::Dialog::ConsolePasswordDialog.new(prompt)).get_input
+  (gui ? Pwl::Dialog::Password.new(program(:name), prompt) : Pwl::Dialog::ConsolePasswordDialog.new(prompt)).get_input
 end
 
 def get_text(prompt, gui = false)
-  (gui ? Pwm::Dialog::Text.new(program(:name), prompt) : Pwm::Dialog::ConsoleTextDialog.new(prompt)).get_input
+  (gui ? Pwl::Dialog::Text.new(program(:name), prompt) : Pwl::Dialog::ConsoleTextDialog.new(prompt)).get_input
 end
 
 def validate!(pwd)
-  Pwm::Store.password_policy.validate!(pwd)
+  Pwl::Store.password_policy.validate!(pwd)
 end

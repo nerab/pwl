@@ -1,6 +1,6 @@
 require 'highline'
 
-module Pwm
+module Pwl
   module Dialog
     class ConsoleDialog < Base
       def initialize(prompt)

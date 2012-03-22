@@ -2,7 +2,7 @@ require 'helper'
 
 class TestMessageZero < Test::Unit::TestCase
   def setup
-    @msg =  Pwm::Message.new("Name: <%= first %> <%= last %>", 0, :first => 'FIRSTNAME', :last => 'LASTNAME')
+    @msg =  Pwl::Message.new("Name: <%= first %> <%= last %>", 0, :first => 'FIRSTNAME', :last => 'LASTNAME')
   end
 
   def test_to_s
@@ -25,7 +25,7 @@ end
 class TestMessageNonZero < Test::Unit::TestCase
   def setup
     @code = Random.rand(255)
-    @msg = Pwm::Message.new("Name: <%= first %> <%= last %>", @code)
+    @msg = Pwl::Message.new("Name: <%= first %> <%= last %>", @code)
   end
 
   def test_code

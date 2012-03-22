@@ -1,6 +1,6 @@
 require 'date'
 
-module Pwm
+module Pwl
   class Store
     class FileAlreadyExistsError < StandardError
       def initialize(file)

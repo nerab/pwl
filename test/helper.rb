@@ -14,7 +14,7 @@ require 'test/unit'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-require 'pwm'
+require 'pwl'
 require 'tmpdir'
 
 class Test::Unit::TestCase
@@ -22,13 +22,13 @@ class Test::Unit::TestCase
 end
 
 module Test
-  module Pwm
+  module Pwl
     class TestCase < Test::Unit::TestCase
       attr_reader :store, :store_file
 
       def setup
         @store_file = temp_file_name
-        @store = ::Pwm::Store.new(@store_file, store_password)
+        @store = ::Pwl::Store.new(@store_file, store_password)
       end
 
       def teardown
@@ -49,7 +49,7 @@ module Test
     end
 
     class AppTestCase < TestCase
-      APP = 'bin/pwm'
+      APP = 'bin/pwl'
 
       protected
 

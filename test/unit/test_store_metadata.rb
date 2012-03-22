@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestStoreConstruction < Test::Pwm::TestCase
+class TestStoreConstruction < Test::Pwl::TestCase
   # when comparing timestamps, allow not more than this difference in seconds
   TIMESTAMP_PRECISION = 1
 
@@ -19,7 +19,7 @@ class TestStoreConstruction < Test::Pwm::TestCase
 
   def test_last_accessed_nonexisting
     assert_equal(nil, store.last_accessed)
-    assert_raise Pwm::Store::KeyNotFoundError do
+    assert_raise Pwl::Store::KeyNotFoundError do
       store.get('foobar')
     end
 

@@ -15,25 +15,25 @@ class TestPasswordDialog < Test::Unit::TestCase
 
   def test_get_with_spaces
     expected = "#{CANDIDATES[Random.rand(CANDIDATES.size)]} #{CANDIDATES[Random.rand(CANDIDATES.size)]}"
-    get_text(expected, Pwm::Dialog::Password)
+    get_text(expected, Pwl::Dialog::Password)
   end
 
   def test_get_empty
-    assert_equal('', Pwm::Dialog::Password.new(self.class.name, "Please just press Enter without entering any text.").get_input)
+    assert_equal('', Pwl::Dialog::Password.new(self.class.name, "Please just press Enter without entering any text.").get_input)
   end
 
   def test_get_without_spaces
     expected = CANDIDATES[Random.rand(CANDIDATES.size)]
-    get_text(expected, Pwm::Dialog::Password)
+    get_text(expected, Pwl::Dialog::Password)
   end
 
   def test_cancel
-    assert_raise Pwm::Dialog::Cancelled do
-      Pwm::Dialog::Password.new(self.class.name, "Please press the Escape key.").get_input
+    assert_raise Pwl::Dialog::Cancelled do
+      Pwl::Dialog::Password.new(self.class.name, "Please press the Escape key.").get_input
     end
 
-    assert_raise Pwm::Dialog::Cancelled do
-      Pwm::Dialog::Password.new(self.class.name, "Please press the Cancel button.").get_input
+    assert_raise Pwl::Dialog::Cancelled do
+      Pwl::Dialog::Password.new(self.class.name, "Please press the Cancel button.").get_input
     end
   end
 

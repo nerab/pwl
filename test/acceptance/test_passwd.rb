@@ -1,7 +1,7 @@
 require 'helper'
 
-# Tests `pwm passwd`
-class TestPasswd < Test::Pwm::AppTestCase
+# Tests `pwl passwd`
+class TestPasswd < Test::Pwl::AppTestCase
   def test_blank_password
     assert_error('May not be blank', 'passwd')
   end

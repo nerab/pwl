@@ -1,16 +1,16 @@
 require 'helper'
 require 'tempfile'
 
-class TestStoreConstruction < Test::Pwm::TestCase
+class TestStoreConstruction < Test::Pwl::TestCase
   def test_existing_store
-    assert_raise Pwm::Store::FileAlreadyExistsError do
-      Pwm::Store.new(store_file, store_password)
+    assert_raise Pwl::Store::FileAlreadyExistsError do
+      Pwl::Store.new(store_file, store_password)
     end
   end
 
   def test_nonexisting_store
-    assert_raise Pwm::Store::FileNotFoundError do
-      Pwm::Store.open(temp_file_name, store_password)
+    assert_raise Pwl::Store::FileNotFoundError do
+      Pwl::Store.open(temp_file_name, store_password)
     end
   end
 
@@ -21,10 +21,10 @@ class TestStoreConstruction < Test::Pwm::TestCase
   SALT    = 4 # like above, plus salt is set to random value
 
   def test_existing_uninitialized_store
-    {USER    => Pwm::Store::NotInitializedError,
-     SYSTEM  => Pwm::Store::NotInitializedError,
-     CREATED => Pwm::Store::NotInitializedError,
-     SALT    => Pwm::Store::WrongMasterPasswordError,
+    {USER    => Pwl::Store::NotInitializedError,
+     SYSTEM  => Pwl::Store::NotInitializedError,
+     CREATED => Pwl::Store::NotInitializedError,
+     SALT    => Pwl::Store::WrongMasterPasswordError,
     }.each{|fake_level, error| assert assert_uninitialized(fake_level, error)}
   end
 
@@ -37,7 +37,7 @@ class TestStoreConstruction < Test::Pwm::TestCase
       fake_store(existing_file, fake_level)
 
       assert_raise(error) do
-        Pwm::Store.open(existing_file, store_password)
+        Pwl::Store.open(existing_file, store_password)
       end
     ensure
        existing_file.close

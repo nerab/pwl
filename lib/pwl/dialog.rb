@@ -5,7 +5,7 @@ require 'console'
 require 'gnome'
 require 'cocoa'
 
-module Pwm
+module Pwl
   module Dialog
     PLATFORM_PASSWORD_DIALOGS = {
       :gnome => GnomePasswordDialog,

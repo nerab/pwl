@@ -1,8 +1,8 @@
 require 'helper'
 require 'nokogiri/diff'
 
-# Tests `pwm export`
-class TestExport < Test::Pwm::AppTestCase
+# Tests `pwl export`
+class TestExport < Test::Pwl::AppTestCase
   def test_empty
     fixture = fixture("test_empty.html").gsub('CREATED_STAMP', DateTime.now.strftime('%F %R')).gsub('MODIFIED_STAMP', 'never').gsub('DATABASE_FILE', store_file)
     assert_successful_html(fixture, 'export')

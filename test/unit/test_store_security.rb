@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestStoreSecurity < Test::Pwm::TestCase
+class TestStoreSecurity < Test::Pwl::TestCase
 
   # Read back raw PStore and ensure what we get is not clear text, even though we know the structure of the store
   def test_encryption
@@ -12,8 +12,8 @@ class TestStoreSecurity < Test::Pwm::TestCase
   end
 
   def test_wrong_password
-    assert_raise Pwm::Store::WrongMasterPasswordError do
-      Pwm::Store.open(store_file, store_password.reverse)
+    assert_raise Pwl::Store::WrongMasterPasswordError do
+      Pwl::Store.open(store_file, store_password.reverse)
     end
   end
 
@@ -23,12 +23,12 @@ class TestStoreSecurity < Test::Pwm::TestCase
     store.change_password!(store_password.reverse)
 
     # the old password must not work anymore
-    assert_raise Pwm::Store::WrongMasterPasswordError do
-      Pwm::Store.open(store_file, store_password)
+    assert_raise Pwl::Store::WrongMasterPasswordError do
+      Pwl::Store.open(store_file, store_password)
     end
 
     # Read back with the changed password
-    reopened = Pwm::Store.open(store_file, store_password.reverse)
+    reopened = Pwl::Store.open(store_file, store_password.reverse)
     assert_equal('Simpson', reopened.get('Homer'))
   end
 end

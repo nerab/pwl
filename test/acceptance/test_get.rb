@@ -1,7 +1,7 @@
 require 'helper'
 
-# Tests `pwm get`
-class TestGet < Test::Pwm::AppTestCase
+# Tests `pwl get`
+class TestGet < Test::Pwl::AppTestCase
   def test_get_unknown_key
     assert_error('No entry was found for foo', 'get foo')
   end

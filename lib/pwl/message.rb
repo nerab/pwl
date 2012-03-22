@@ -8,7 +8,7 @@ class Hash
   end
 end
 
-module Pwm
+module Pwl
   class ReservedMessageCodeError < StandardError; end
 
   class Message

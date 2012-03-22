@@ -1,5 +1,4 @@
-
-module Pwm
+module Pwl
   class InvalidMasterPasswordError < StandardError
     def initialize(reason)
       super("The master password is not valid: #{reason}")

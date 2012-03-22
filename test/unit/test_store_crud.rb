@@ -1,33 +1,33 @@
 require 'helper'
 
-class TestStoreCRUD < Test::Pwm::TestCase
+class TestStoreCRUD < Test::Pwl::TestCase
   def test_put_get
     store.put('foo', 'bar')
     assert_equal('bar', store.get('foo'))
   end
 
   def test_get_blank
-    assert_raise Pwm::Store::BlankKeyError do
+    assert_raise Pwl::Store::BlankKeyError do
       store.get('')
     end
 
-    assert_raise Pwm::Store::BlankKeyError do
+    assert_raise Pwl::Store::BlankKeyError do
       store.get(nil)
     end
   end
 
   def test_put_get_blank
-    assert_raise Pwm::Store::BlankValueError do
+    assert_raise Pwl::Store::BlankValueError do
       store.put('empty', '')
     end
 
-    assert_raise Pwm::Store::BlankValueError do
+    assert_raise Pwl::Store::BlankValueError do
       store.put('nil', nil)
     end
   end
 
   def test_unknown_key
-    assert_raise Pwm::Store::KeyNotFoundError do
+    assert_raise Pwl::Store::KeyNotFoundError do
       store.get('foo')
     end
   end
@@ -67,23 +67,23 @@ class TestStoreCRUD < Test::Pwm::TestCase
     store.put('foo', 'bar')
     assert_equal('bar', store.delete('foo'))
     
-    assert_raise Pwm::Store::KeyNotFoundError do
+    assert_raise Pwl::Store::KeyNotFoundError do
       store.get('foo')
     end
   end
   
   def test_delete_blank
-    assert_raise Pwm::Store::BlankKeyError do
+    assert_raise Pwl::Store::BlankKeyError do
       store.delete('')
     end
 
-    assert_raise Pwm::Store::BlankKeyError do
+    assert_raise Pwl::Store::BlankKeyError do
       store.delete(nil)
     end
   end
 
   def test_delete_unknown_key
-    assert_raise Pwm::Store::KeyNotFoundError do
+    assert_raise Pwl::Store::KeyNotFoundError do
       store.delete('foo')
     end
   end
