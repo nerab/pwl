@@ -36,6 +36,7 @@ Gem::Specification.new do |s|
     "lib/pwl/message.rb",
     "lib/pwl/password_policy.rb",
     "lib/pwl/store.rb",
+    "pwl.gemspec",
     "templates/export.html.erb",
     "test/acceptance/test_basics.rb",
     "test/acceptance/test_delete.rb",
