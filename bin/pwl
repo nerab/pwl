@@ -80,7 +80,7 @@ command :get do |c|
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      result = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui)).get(args[0])
+      result = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).get(args[0])
       if result.blank?
         exit_with(:no_value_found, options.verbose, :name => args[0])
       else
@@ -107,7 +107,7 @@ command :list do |c|
     options.default :separator => ' '
 
     begin
-      result = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui)).list(args[0]).join(options.separator)
+      result = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).list(args[0]).join(options.separator)
       if !result.blank?
         puts result
       else
@@ -135,7 +135,7 @@ command :put do |c|
 
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
-      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
@@ -172,7 +172,7 @@ command :delete do |c|
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
@@ -190,7 +190,7 @@ command :passwd do |c|
     exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
 
     begin
-      store = Pwl::Store.open(store_file, get_password('Enter current master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password("Enter the current master password for #{program(:name)}:", options.gui))
 
       if !STDIN.tty? && !options.gui
         # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
@@ -204,7 +204,7 @@ command :passwd do |c|
       else
         # If running interactively (console or gui), we loop until we get a valid password or break
         begin
-          new_master_password = get_password('Enter new master password:', options.gui)
+          new_master_password = get_password("Enter the new master password for #{program(:name)}:", options.gui)
         end while begin
           validate!(new_master_password)
         rescue Pwl::InvalidMasterPasswordError => e
@@ -213,7 +213,7 @@ command :passwd do |c|
         end
 
         # Confirm new password
-        if new_master_password != get_password('Enter new master password again:', options.gui)
+        if new_master_password != get_password("Enter the new master password for #{program(:name)} again:", options.gui)
           exit_with(:passwords_dont_match, options.verbose)
         end
       end
@@ -222,7 +222,7 @@ command :passwd do |c|
     end
 
     store.change_password!(new_master_password)
-    STDERR.puts "Successfully changed master password." if options.verbose
+    STDERR.puts "Successfully changed master password for #{program(:name)}." if options.verbose
   end
 end
 
@@ -236,7 +236,7 @@ command :export do |c|
 
     begin
       template = ERB.new(File.read(DEFAULT_EXPORT_TEMPLATE))
-      store = Pwl::Store.open(store_file, get_password('Enter master password:', options.gui))
+      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
       puts template.result(binding)
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
