@@ -21,6 +21,7 @@ EXIT_CODES = {
   :list_empty            => Pwl::Message.new('List is empty.', 8),
   :list_empty_filter     => Pwl::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
   :validation_new_failed => Pwl::ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
+  :unknown_export_format => Pwl::ErrorMessage.new('<%= format %> is not a known export format.', 11, :format => 'FORMAT'),
 }
 
 program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
@@ -234,10 +235,10 @@ command :export do |c|
   c.option '--format FORMAT', String, 'Specify export format. Default is html.'
   c.action do |args, options|
     exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
-    options.default :format => :html
+    options.default :format => 'html'
 
-    presenter = {:html => HtmlPresenter, :json => JsonPresenter, :yaml => YamlPresenter}[options.format]
-    exit_with(:unknown_export_format, options.verbose, options.format) if presenter.nil?
+    presenter = {:html => Pwl::Presenter::Html, :json => Pwl::Presenter::Json, :yaml => Pwl::Presenter::Yaml}[options.format.to_sym]
+    exit_with(:unknown_export_format, options.verbose, :format => options.format) if presenter.nil?
     
     begin
       store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
