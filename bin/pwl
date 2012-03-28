@@ -231,13 +231,17 @@ command :export do |c|
   c.summary = 'Exports all entries.'
   c.description = 'This command prints all entries to STDOUT.'
   c.example 'Prints all entries', "#{program(:name)} #{c.name}"
+  c.option '--format FORMAT', String, 'Specify export format. Default is html.'
   c.action do |args, options|
     exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    options.default :format => :html
 
+    presenter = {:html => HtmlPresenter, :json => JsonPresenter, :yaml => YamlPresenter}[options.format]
+    exit_with(:unknown_export_format, options.verbose, options.format) if presenter.nil?
+    
     begin
-      template = ERB.new(File.read(DEFAULT_EXPORT_TEMPLATE))
       store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
-      puts template.result(binding)
+      puts presenter.new(store).to_s
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end

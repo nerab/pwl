@@ -6,6 +6,7 @@ source "http://rubygems.org"
 gem 'encryptor'
 gem 'commander'
 gem 'activesupport'
+gem 'jbuilder', '~> 0.4'
 
 group :test do
   gem "rake"
