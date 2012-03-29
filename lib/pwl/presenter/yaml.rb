@@ -8,7 +8,15 @@ module Pwl
       end
 
       def to_s
-        @store.all.to_yaml
+        result = {}
+        result[:created] = @store.created.to_s
+        result[:last_accessed] = @store.last_accessed.to_s
+        result[:last_modified] = @store.last_modified.to_s
+        result[:entries] = []
+        @store.all.each{|entry|
+          result[:entries] << {:key => entry.first, :value => entry.last}
+        }
+        result.to_yaml
       end
     end
   end
