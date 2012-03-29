@@ -3,9 +3,9 @@ source "http://rubygems.org"
 # Example:
 #   gem "activesupport", ">= 2.3.5"
 
-gem 'encryptor'
-gem 'commander'
-gem 'activesupport'
+gem 'encryptor', "~> 1.1"
+gem 'commander', "~> 4.1"
+gem 'activesupport', "~> 3.2"
 gem 'jbuilder', '~> 0.4'
 
 group :test do
