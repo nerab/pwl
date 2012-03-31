@@ -5,7 +5,7 @@ source "http://rubygems.org"
 
 gem 'encryptor', "~> 1.1"
 gem 'commander', "~> 4.1"
-gem 'activesupport', "~> 3.2"
+gem 'activesupport', "~> 3.2.3"
 gem 'jbuilder', '~> 0.4'
 
 group :test do
