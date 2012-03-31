@@ -24,7 +24,7 @@ EXIT_CODES = {
   :unknown_export_format => Pwl::ErrorMessage.new('<%= format %> is not a known export format.', 11, :format => 'FORMAT'),
 }
 
-program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s}: #{m.to_s}"}.join("\n")
+program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s.rjust(EXIT_CODES.size.to_s.size)}: #{m.to_s}"}.join("\n")
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
 DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
