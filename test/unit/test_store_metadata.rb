@@ -1,6 +1,6 @@
 require 'helper'
 
-class TestStoreConstruction < Test::Pwl::TestCase
+class TestStoreMetaData < Test::Pwl::TestCase
   # when comparing timestamps, allow not more than this difference in seconds
   TIMESTAMP_PRECISION = 1
 
