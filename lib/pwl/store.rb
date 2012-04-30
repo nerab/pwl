@@ -1,5 +1,3 @@
-require 'date'
-
 module Pwl
   class Store
     class FileAlreadyExistsError < StandardError

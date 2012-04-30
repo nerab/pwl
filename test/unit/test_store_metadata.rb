@@ -9,6 +9,10 @@ class TestStoreConstruction < Test::Pwl::TestCase
     assert_in_delta(DateTime.now.to_time.to_i, store.created.to_time.to_i, TIMESTAMP_PRECISION)
   end
 
+  def test_failing_on_travis
+    assert 0 < DateTime.now.to_time.to_i
+  end
+
   def test_last_accessed
     assert_equal(nil, store.last_accessed)
     store.put('foobar', 'barfoot')
