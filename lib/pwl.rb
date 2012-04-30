@@ -1,6 +1,6 @@
 require 'pstore'
 require 'encryptor'
-require 'active_support/core_ext/object/blank'
+require 'active_support'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[pwl])
 
