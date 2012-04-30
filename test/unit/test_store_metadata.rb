@@ -2,11 +2,11 @@ require 'helper'
 
 class TestStoreMetaData < Test::Pwl::TestCase
   # when comparing timestamps, allow not more than this difference in seconds
-  TIMESTAMP_PRECISION = 1
+  TIMESTAMP_PRECISION = 0.001
 
   def test_created
     assert_equal(nil, store.last_accessed)
-    assert_in_delta(DateTime.now.to_time.to_i, store.created.to_time.to_i, TIMESTAMP_PRECISION)
+    assert_in_delta(DateTime.now, store.created, TIMESTAMP_PRECISION)
   end
 
   def test_last_accessed
@@ -14,7 +14,7 @@ class TestStoreMetaData < Test::Pwl::TestCase
     store.put('foobar', 'barfoot')
     assert_equal(nil, store.last_accessed)
     store.get('foobar')
-    assert_in_delta(DateTime.now.to_time.to_i, store.last_accessed.to_time.to_i, TIMESTAMP_PRECISION)
+    assert_in_delta(DateTime.now, store.last_accessed, TIMESTAMP_PRECISION)
   end
 
   def test_last_accessed_nonexisting
@@ -30,6 +30,6 @@ class TestStoreMetaData < Test::Pwl::TestCase
   def test_last_modified
     assert_equal(nil, store.last_modified)
     store.put('foobar', 'barfoot')
-    assert_in_delta(DateTime.now.to_time.to_i, store.last_modified.to_time.to_i, TIMESTAMP_PRECISION)
+    assert_in_delta(DateTime.now, store.last_modified, TIMESTAMP_PRECISION)
   end
 end
