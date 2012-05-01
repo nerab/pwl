@@ -11,7 +11,7 @@ class TestExport < Test::Pwl::AppTestCase
   def test_all
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
     test_vector.each{|k,v|
-      assert_successful('', "put '#{k}' '#{v}'")
+      assert_successful('', "add '#{k}' '#{v}'")
     }
     
     now = DateTime.now.strftime('%F %R')

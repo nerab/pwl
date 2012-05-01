@@ -1,8 +1,8 @@
 require 'helper'
 
 class TestStoreCRUD < Test::Pwl::TestCase
-  def test_put_get
-    store.put('foo', 'bar')
+  def test_add_get
+    store.add('foo', 'bar')
     assert_equal('bar', store.get('foo'))
   end
 
@@ -16,13 +16,13 @@ class TestStoreCRUD < Test::Pwl::TestCase
     end
   end
 
-  def test_put_get_blank
+  def test_add_get_blank
     assert_raise Pwl::Store::BlankValueError do
-      store.put('empty', '')
+      store.add('empty', '')
     end
 
     assert_raise Pwl::Store::BlankValueError do
-      store.put('nil', nil)
+      store.add('nil', nil)
     end
   end
 
@@ -38,7 +38,7 @@ class TestStoreCRUD < Test::Pwl::TestCase
 
   def test_list
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
-    test_vector.each{|k,v| store.put(k, v)}
+    test_vector.each{|k,v| store.add(k, v)}
     assert_equal(test_vector.keys, store.list)
     store.list.each{|key|
       assert_equal(test_vector[key], store.get(key))
@@ -47,7 +47,7 @@ class TestStoreCRUD < Test::Pwl::TestCase
 
   def test_all
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
-    test_vector.each{|k,v| store.put(k, v)}
+    test_vector.each{|k,v| store.add(k, v)}
     assert_equal(test_vector, store.all)
     store.all.each{|k,v|
       assert_equal(test_vector[k], v)
@@ -56,7 +56,7 @@ class TestStoreCRUD < Test::Pwl::TestCase
 
   def test_list_filter
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
-    test_vector.each{|k,v| store.put(k, v)}
+    test_vector.each{|k,v| store.add(k, v)}
 
     filter = 'foo bar'
     expected = test_vector.keys.select{|k,v| k =~ /#{filter}/}
@@ -64,7 +64,7 @@ class TestStoreCRUD < Test::Pwl::TestCase
   end
   
   def test_delete
-    store.put('foo', 'bar')
+    store.add('foo', 'bar')
     assert_equal('bar', store.delete('foo'))
     
     assert_raise Pwl::Store::KeyNotFoundError do

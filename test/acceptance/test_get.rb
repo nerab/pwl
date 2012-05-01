@@ -11,7 +11,7 @@ class TestGet < Test::Pwl::AppTestCase
   end
 
   def test_get_known_key
-    assert_successful('', 'put foo bar') # TODO Use a fixture instead of put
+    assert_successful('', 'add foo bar') # TODO Use a fixture instead of add
     assert_successful('^bar$', 'get foo')
   end
 end

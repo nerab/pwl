@@ -49,7 +49,7 @@ class TestStorePasswordPolicy < Test::Pwl::TestCase
 
   def assert_valid(password)
     store = ::Pwl::Store.new(@store_file, password)
-    store.put('foo', 'bar')
+    store.add('foo', 'bar')
     assert_equal('bar', store.get('foo'))
   end
 

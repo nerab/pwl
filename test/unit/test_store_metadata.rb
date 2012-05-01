@@ -11,7 +11,7 @@ class TestStoreMetaData < Test::Pwl::TestCase
 
   def test_last_accessed
     assert_equal(nil, store.last_accessed)
-    store.put('foobar', 'barfoot')
+    store.add('foobar', 'barfoot')
     assert_equal(nil, store.last_accessed)
     store.get('foobar')
     assert_in_delta(DateTime.now, store.last_accessed, TIMESTAMP_PRECISION)
@@ -29,7 +29,7 @@ class TestStoreMetaData < Test::Pwl::TestCase
 
   def test_last_modified
     assert_equal(nil, store.last_modified)
-    store.put('foobar', 'barfoot')
+    store.add('foobar', 'barfoot')
     assert_in_delta(DateTime.now, store.last_modified, TIMESTAMP_PRECISION)
   end
 end

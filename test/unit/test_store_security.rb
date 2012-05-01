@@ -5,7 +5,7 @@ class TestStoreSecurity < Test::Pwl::TestCase
   # Read back raw PStore and ensure what we get is not clear text, even though we know the structure of the store
   def test_encryption
     assert(!store.nil?, "Store expected, but it is nil")
-    store.put('foo', 'bar')
+    store.add('foo', 'bar')
     raw = PStore.new(store_file)
     assert_not_equal('bar', raw.transaction{raw[:user]['foo']})
     assert_nil(raw.transaction{raw[:user]['foo']}) # must not find cleartext entry
@@ -19,7 +19,7 @@ class TestStoreSecurity < Test::Pwl::TestCase
 
   def test_change_password
     assert(!store.nil?, "Store expected, but it is nil")
-    store.put('Homer', 'Simpson')
+    store.add('Homer', 'Simpson')
     store.change_password!(store_password.reverse)
 
     # the old password must not work anymore

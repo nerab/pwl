@@ -11,7 +11,7 @@ class TestList < Test::Pwl::AppTestCase
   def test_list_all
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
     test_vector.each{|k,v|
-      assert_successful('', "put '#{k}' '#{v}'")
+      assert_successful('', "add '#{k}' '#{v}'")
     }
 
     assert_successful(test_vector.keys.join('-'), 'list -s "-"')
@@ -20,7 +20,7 @@ class TestList < Test::Pwl::AppTestCase
   def test_list_filter
     test_vector = Hash['foo', 'one', 'foot', 'two', 'Homer Simpson', 'Apu Nahasapeemapetilon']
     test_vector.each{|k,v|
-      assert_successful('', "put '#{k}' '#{v}'")
+      assert_successful('', "add '#{k}' '#{v}'")
     }
 
     filter = 'foo'
