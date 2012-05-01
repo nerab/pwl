@@ -140,7 +140,7 @@ module Pwl
     #
     # Store value stored under key
     #
-    def put(key, value)
+    def add(key, value)
       raise BlankKeyError if key.blank?
       raise BlankValueError if value.blank?
       @backend.transaction{

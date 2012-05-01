@@ -124,7 +124,7 @@ command :list do |c|
   end
 end
 
-command :put do |c|
+command :add do |c|
   c.syntax = "#{program(:name)} #{c.name} NAME [VALUE]"
   c.summary = 'Stores VALUE under NAME'
   c.description = 'Adds or updates the entry stored under NAME. If NAME is already present in the store, it will be updated with VALUE. If NAME is not already present in the store, a new entry will be created. If VALUE is not given, it will be read from STDIN.'

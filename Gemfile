@@ -1,7 +1,4 @@
 source "http://rubygems.org"
-# Add dependencies required to use your gem here.
-# Example:
-#   gem "activesupport", ">= 2.3.5"
 
 gem 'encryptor', "~> 1.1"
 gem 'commander', "~> 4.1"

@@ -7,7 +7,7 @@ class TestPasswd < Test::Pwl::AppTestCase
   end
 
   def test_standard
-    assert_successful('', 'put foo bar')
+    assert_successful('', 'add foo bar')
 
     new_pwd = store_password.reverse
 
