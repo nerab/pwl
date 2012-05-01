@@ -19,7 +19,7 @@ Before it can store passwords, pwl needs to initialize the password database. Th
 
 Storing a password requires a name under which the password can be retrieved later on:
 
-      pwl put "Mail Account" s3cret
+      pwl add "Mail Account" s3cret
 
 This command will store the password "s3cret" under the name "Mail Account". Later on this password can be retrieved using the get command:
 
