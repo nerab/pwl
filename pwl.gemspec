@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "pwl"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nicholas E. Rabenau"]
-  s.date = "2012-03-22"
+  s.date = "2012-05-02"
   s.description = "pwl is a secure password locker for the commandline"
   s.email = "nerab@gmx.net"
   s.executables = ["pwl", "pwl"]
@@ -33,22 +33,31 @@ Gem::Specification.new do |s|
     "lib/pwl/dialog/cocoa.rb",
     "lib/pwl/dialog/console.rb",
     "lib/pwl/dialog/gnome.rb",
+    "lib/pwl/locker.rb",
     "lib/pwl/message.rb",
     "lib/pwl/password_policy.rb",
-    "lib/pwl/store.rb",
+    "lib/pwl/presenter/html.rb",
+    "lib/pwl/presenter/json.rb",
+    "lib/pwl/presenter/yaml.rb",
     "pwl.gemspec",
     "templates/export.html.erb",
+    "test/acceptance/test_add.rb",
     "test/acceptance/test_basics.rb",
     "test/acceptance/test_delete.rb",
     "test/acceptance/test_dialogs.rb",
     "test/acceptance/test_export.rb",
+    "test/acceptance/test_export_json.rb",
+    "test/acceptance/test_export_yaml.rb",
     "test/acceptance/test_get.rb",
     "test/acceptance/test_init.rb",
     "test/acceptance/test_list.rb",
     "test/acceptance/test_passwd.rb",
-    "test/acceptance/test_put.rb",
     "test/fixtures/test_all.html",
+    "test/fixtures/test_all.json",
+    "test/fixtures/test_all.yaml",
     "test/fixtures/test_empty.html",
+    "test/fixtures/test_empty.json",
+    "test/fixtures/test_empty.yaml",
     "test/helper.rb",
     "test/unit/test_error.rb",
     "test/unit/test_message.rb",
@@ -61,34 +70,37 @@ Gem::Specification.new do |s|
   s.homepage = "http://github.com/nerab/pwl"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
-  s.rubygems_version = "1.8.15"
+  s.rubygems_version = "1.8.24"
   s.summary = "Command-line password locker"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<encryptor>, [">= 0"])
-      s.add_runtime_dependency(%q<commander>, [">= 0"])
-      s.add_runtime_dependency(%q<activesupport>, [">= 0"])
-      s.add_development_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_development_dependency(%q<jeweler>, ["~> 1.8.3"])
+      s.add_runtime_dependency(%q<encryptor>, ["~> 1.1"])
+      s.add_runtime_dependency(%q<commander>, ["~> 4.1"])
+      s.add_runtime_dependency(%q<activesupport>, ["~> 3.2"])
+      s.add_runtime_dependency(%q<jbuilder>, ["~> 0.4"])
+      s.add_development_dependency(%q<rdoc>, ["~> 3.1"])
+      s.add_development_dependency(%q<bundler>, ["~> 1.1"])
+      s.add_development_dependency(%q<jeweler>, ["~> 1.8"])
     else
-      s.add_dependency(%q<encryptor>, [">= 0"])
-      s.add_dependency(%q<commander>, [">= 0"])
-      s.add_dependency(%q<activesupport>, [">= 0"])
-      s.add_dependency(%q<rdoc>, ["~> 3.12"])
-      s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-      s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
+      s.add_dependency(%q<encryptor>, ["~> 1.1"])
+      s.add_dependency(%q<commander>, ["~> 4.1"])
+      s.add_dependency(%q<activesupport>, ["~> 3.2"])
+      s.add_dependency(%q<jbuilder>, ["~> 0.4"])
+      s.add_dependency(%q<rdoc>, ["~> 3.1"])
+      s.add_dependency(%q<bundler>, ["~> 1.1"])
+      s.add_dependency(%q<jeweler>, ["~> 1.8"])
     end
   else
-    s.add_dependency(%q<encryptor>, [">= 0"])
-    s.add_dependency(%q<commander>, [">= 0"])
-    s.add_dependency(%q<activesupport>, [">= 0"])
-    s.add_dependency(%q<rdoc>, ["~> 3.12"])
-    s.add_dependency(%q<bundler>, ["~> 1.0.0"])
-    s.add_dependency(%q<jeweler>, ["~> 1.8.3"])
+    s.add_dependency(%q<encryptor>, ["~> 1.1"])
+    s.add_dependency(%q<commander>, ["~> 4.1"])
+    s.add_dependency(%q<activesupport>, ["~> 3.2"])
+    s.add_dependency(%q<jbuilder>, ["~> 0.4"])
+    s.add_dependency(%q<rdoc>, ["~> 3.1"])
+    s.add_dependency(%q<bundler>, ["~> 1.1"])
+    s.add_dependency(%q<jeweler>, ["~> 1.8"])
   end
 end
 
