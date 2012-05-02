@@ -3,17 +3,17 @@ require 'yaml'
 module Pwl
   module Presenter
     class Yaml
-      def initialize(store)
-          @store = store
+      def initialize(locker)
+          @locker = locker
       end
 
       def to_s
         result = {}
-        result[:created] = @store.created.to_s
-        result[:last_accessed] = @store.last_accessed.to_s
-        result[:last_modified] = @store.last_modified.to_s
+        result[:created] = @locker.created.to_s
+        result[:last_accessed] = @locker.last_accessed.to_s
+        result[:last_modified] = @locker.last_modified.to_s
         result[:entries] = []
-        @store.all.each{|entry|
+        @locker.all.each{|entry|
           result[:entries] << {:key => entry.first, :value => entry.last}
         }
         result.to_yaml

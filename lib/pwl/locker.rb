@@ -1,5 +1,5 @@
 module Pwl
-  class Store
+  class Locker
     class FileAlreadyExistsError < StandardError
       def initialize(file)
         super("The file #{file} already exists")
@@ -8,7 +8,7 @@ module Pwl
 
     class NotInitializedError < StandardError
       def initialize(file)
-        super("The store at #{file} was not initialized yet")
+        super("The locker at #{file} was not initialized yet")
       end
     end
 
@@ -20,7 +20,7 @@ module Pwl
 
     class FileNotFoundError < StandardError
       def initialize(file)
-        super("The file #{file} for the store was not found")
+        super("The file #{file} for the locker was not found")
       end
     end
 
@@ -54,28 +54,28 @@ module Pwl
       DEFAULT_PASSWORD_POLICY = ReasonableComplexityPasswordPolicy.new
 
       #
-      # Constructs a new store (not only the object, but also the file behind it).
+      # Constructs a new locker (not only the object, but also the file behind it).
       #
       def new(file, master_password, options = {})
         if File.exists?(file) && !options[:force] # don't allow accedidential override of existing file
           raise FileAlreadyExistsError.new(file)
         else
           password_policy.validate!(master_password)
-          store = load(file, master_password)
-          store.reset!
+          locker = load(file, master_password)
+          locker.reset!
         end
 
-        store
+        locker
       end
 
       #
-      # Opens an existing store. Throws if the backing file does not exist or isn't initialized.
+      # Opens an existing locker. Throws if the backing file does not exist or isn't initialized.
       #
       def open(file, master_password)
         raise FileNotFoundError.new(file) unless File.exists?(file)
-        store = load(file, master_password)
-        store.authenticate # do not allow openeing without successful authentication
-        store
+        locker = load(file, master_password)
+        locker.authenticate # do not allow openeing without successful authentication
+        locker
       end
 
       def password_policy
@@ -88,9 +88,9 @@ module Pwl
     end
 
     #
-    # Create a new store object by loading an existing file.
+    # Create a new locker object by loading an existing file.
     #
-    # Beware: New is overridden; it performs additional actions after before and after #initialize
+    # Beware: New is overridden; it performs additional actions before and after #initialize
     #
     def initialize(file, master_password)
       @backend = PStore.new(file, true)
@@ -111,7 +111,7 @@ module Pwl
     end
 
     #
-    # Check that the master password is correct. This is done to prevent opening an existing but blank store with the wrong password.
+    # Check that the master password is correct. This is done to prevent opening an existing but blank locker with the wrong password.
     #
     def authenticate
       begin
@@ -216,28 +216,28 @@ module Pwl
     end
 
     #
-    # Return the date when the store was created
+    # Return the date when the locker was created
     #
     def created
       @backend.transaction(true){@backend[:system][:created]}
     end
 
     #
-    # Return the date when the store was last accessed
+    # Return the date when the locker was last accessed
     #
     def last_accessed
       @backend.transaction(true){@backend[:system][:last_accessed]}
     end
 
     #
-    # Return the date when the store was last modified
+    # Return the date when the locker was last modified
     #
     def last_modified
       @backend.transaction(true){@backend[:system][:last_modified]}
     end
 
     #
-    # Return the path to the file backing this store
+    # Return the path to the file backing this locker
     #
     def path
       @backend.path

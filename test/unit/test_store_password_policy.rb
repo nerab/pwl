@@ -1,12 +1,12 @@
 require 'helper'
 
-class TestStorePasswordPolicy < Test::Pwl::TestCase
+class TestLockerPasswordPolicy < Test::Pwl::TestCase
   def setup
-    @store_file = temp_file_name
+    @locker_file = temp_file_name
   end
 
   def teardown
-    File.unlink(@store_file) if File.exist?(@store_file)
+    File.unlink(@locker_file) if File.exist?(@locker_file)
   end
 
   def test_validations_ok_0
@@ -48,9 +48,9 @@ class TestStorePasswordPolicy < Test::Pwl::TestCase
   private
 
   def assert_valid(password)
-    store = ::Pwl::Store.new(@store_file, password)
-    store.add('foo', 'bar')
-    assert_equal('bar', store.get('foo'))
+    locker = ::Pwl::Locker.new(@locker_file, password)
+    locker.add('foo', 'bar')
+    assert_equal('bar', locker.get('foo'))
   end
 
   def assert_invalid(password)

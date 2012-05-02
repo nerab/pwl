@@ -9,7 +9,7 @@ class TestPasswd < Test::Pwl::AppTestCase
   def test_standard
     assert_successful('', 'add foo bar')
 
-    new_pwd = store_password.reverse
+    new_pwd = locker_password.reverse
 
     # If we are in a pipe (and we are in these tests), the new password is expected as first arg
     assert_successful('^$', "passwd \"#{new_pwd}\"")

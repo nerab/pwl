@@ -7,15 +7,15 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 require 'pwl'
 
 program :version, Pwl::VERSION
-program :description, "#{program(:name)} is a secure password manager for the command line."
+program :description, "#{program(:name)} is a secure password locker for the command line."
 
 EXIT_CODES = {
   :success               => Pwl::Message.new('Success.'),
   :aborted               => Pwl::Message.new('Aborted by user.', 1),
   :passwords_dont_match  => Pwl::ErrorMessage.new('Passwords do not match.', 2),
   :no_value_found        => Pwl::Message.new('No value found for <%= name %>.', 3, :name => 'NAME'),
-  :file_exists           => Pwl::ErrorMessage.new('There already exists a store at <%= file %>. Use --force to overwrite it or --file to specify a different store.', 4, :file => 'FILE'),
-  :file_not_found        => Pwl::ErrorMessage.new('Store file <%= file %> could not be found.', 5, :file => 'FILE'),
+  :file_exists           => Pwl::ErrorMessage.new('There already exists a locker at <%= file %>. Use --force to overwrite it or --file to specify a different locker.', 4, :file => 'FILE'),
+  :file_not_found        => Pwl::ErrorMessage.new('Locker file <%= file %> could not be found.', 5, :file => 'FILE'),
   :name_blank            => Pwl::ErrorMessage.new('Name may not be blank.', 6),
   :value_blank           => Pwl::ErrorMessage.new('Value may not be blank.', 7),
   :list_empty            => Pwl::Message.new('List is empty.', 8),
@@ -27,25 +27,25 @@ EXIT_CODES = {
 program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s.rjust(EXIT_CODES.size.to_s.size)}: #{m.to_s}"}.join("\n")
 program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
 
-DEFAULT_STORE_FILE = File.expand_path("~/.#{program(:name)}.pstore")
+DEFAULT_LOCKER_FILE = File.expand_path("~/.#{program(:name)}.pstore")
 DEFAULT_EXPORT_TEMPLATE = File.join(File.dirname(__FILE__), *%w[.. templates export.html.erb])
 
-store_file = DEFAULT_STORE_FILE
+locker_file = DEFAULT_LOCKER_FILE
 
 global_option '-V', '--verbose', 'Enable verbose output'
-global_option('-f', '--file FILE', 'Determine the file that holds the store'){|file| store_file = file}
+global_option('-f', '--file FILE', 'Determine the file that holds the locker'){|file| locker_file = file}
 global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
 
 command :init do |c|
   c.syntax = "#{program(:name)} #{c.name}"
-  c.summary = 'Initializes a new store'
-  c.description = 'This command initializes a new password store. Password quality is enforced using validation rules.'
-  c.example "Initializes a new password store in #{DEFAULT_STORE_FILE}", "#{program(:name)} #{c.name}"
-  c.example "Initializes a new password store in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
-  c.option '--force', 'Force-overwrite an existing store file'
+  c.summary = 'Initializes a new locker'
+  c.description = 'This command initializes a new password locker. Password quality is enforced using validation rules.'
+  c.example "Initializes a new password locker in #{DEFAULT_LOCKER_FILE}", "#{program(:name)} #{c.name}"
+  c.example "Initializes a new password locker in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
+  c.option '--force', 'Force-overwrite an existing locker file'
   c.action do |args, options|
-    # Store checks this too, but we want to fail fast.
-    exit_with(:file_exists, options.verbose, :file => store_file) if File.exists?(store_file) && !options.force
+    # Locker checks this too, but we want to fail fast.
+    exit_with(:file_exists, options.verbose, :file => locker_file) if File.exists?(locker_file) && !options.force
 
     begin
       begin
@@ -65,8 +65,8 @@ command :init do |c|
       exit_with(:aborted, options.verbose)
     end
 
-    Pwl::Store.new(store_file, master_password, {:force => options.force})
-    STDERR.puts "Successfully initialized new store at #{store_file}" if options.verbose
+    Pwl::Locker.new(locker_file, master_password, {:force => options.force})
+    STDERR.puts "Successfully initialized new locker at #{locker_file}" if options.verbose
   end
 end
 
@@ -76,12 +76,12 @@ command :get do |c|
   c.description = 'This command retrieves the value stored under NAME and prints it on STDOUT.'
   c.example 'Reads the value stored under the name "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
-    # Store checks this too, but we want to fail fast and provide a message.
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    # Locker checks this too, but we want to fail fast and provide a message.
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      result = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).get(args[0])
+      result = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).get(args[0])
       if result.blank?
         exit_with(:no_value_found, options.verbose, :name => args[0])
       else
@@ -102,13 +102,13 @@ command :list do |c|
   c.example 'Prints all names separated by comma', "#{program(:name)} #{c.name} --separator ,"
   c.option '-s', '--separator SEPARATOR', String, 'Separate names by SEPARATOR'
   c.action do |args, options|
-    # Store checks this too, but we want to fail fast and provide a message.
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    # Locker checks this too, but we want to fail fast and provide a message.
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
 
     options.default :separator => ' '
 
     begin
-      result = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).list(args[0]).join(options.separator)
+      result = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).list(args[0]).join(options.separator)
       if !result.blank?
         puts result
       else
@@ -127,16 +127,16 @@ end
 command :add do |c|
   c.syntax = "#{program(:name)} #{c.name} NAME [VALUE]"
   c.summary = 'Stores VALUE under NAME'
-  c.description = 'Adds or updates the entry stored under NAME. If NAME is already present in the store, it will be updated with VALUE. If NAME is not already present in the store, a new entry will be created. If VALUE is not given, it will be read from STDIN.'
+  c.description = 'Adds or updates the entry stored under NAME. If NAME is already present in the locker, it will be updated with VALUE. If NAME is not already present in the locker, a new entry will be created. If VALUE is not given, it will be read from STDIN.'
   c.example 'Stores the value "bar" under the name "foo"', "#{program(:name)} #{c.name} foo bar"
   c.example 'Reads STDIN and stores that as value under the name "foo"', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     # Ask for the master password _before_ it may be necessary to ask for the value in a terminal
     begin
-      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
+      locker = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
@@ -158,7 +158,7 @@ command :add do |c|
       end
     end
 
-    store.add(args[0], value)
+    locker.add(args[0], value)
     STDERR.puts "Successfully stored new value under #{args[0]}." if options.verbose
   end
 end
@@ -166,19 +166,19 @@ end
 command :delete do |c|
   c.syntax = "#{program(:name)} #{c.name} NAME"
   c.summary = 'Deletes the entry stored under NAME'
-  c.description = 'Deletes the complete entry that is stored under NAME. If NAME is not present in the store, an error will thrown.'
+  c.description = 'Deletes the complete entry that is stored under NAME. If NAME is not present in the locker, an error will thrown.'
   c.example 'Deletes what was stored under the name "foo"', "#{program(:name)} #{c.name} foo"
   c.action do |args, options|
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
     begin
-      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
+      locker = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
 
-    store.delete(args[0])
+    locker.delete(args[0])
     STDERR.puts "Successfully deleted the value under #{args[0]}." if options.verbose
   end
 end
@@ -186,12 +186,12 @@ end
 command :passwd do |c|
   c.syntax = "#{program(:name)} #{c.name} [NEW_MASTER_PASSWORD]"
   c.summary = 'Changes the master password to NEW_MASTER_PASSWORD.'
-  c.description = 'This command changes the master password of the store. Password quality is enforced using validation rules.'
+  c.description = 'This command changes the master password of the locker. Password quality is enforced using validation rules.'
   c.action do |args, options|
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
 
     begin
-      store = Pwl::Store.open(store_file, get_password("Enter the current master password for #{program(:name)}:", options.gui))
+      locker = Pwl::Locker.open(locker_file, get_password("Enter the current master password for #{program(:name)}:", options.gui))
 
       if !STDIN.tty? && !options.gui
         # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
@@ -222,7 +222,7 @@ command :passwd do |c|
       exit_with(:aborted, options.verbose)
     end
 
-    store.change_password!(new_master_password)
+    locker.change_password!(new_master_password)
     STDERR.puts "Successfully changed master password for #{program(:name)}." if options.verbose
   end
 end
@@ -237,15 +237,15 @@ command :export do |c|
   c.example 'Prints all entries in JSON format', "#{program(:name)} #{c.name} --format json"
   c.example 'Prints all entries in YAML format', "#{program(:name)} #{c.name} --format yaml"
   c.action do |args, options|
-    exit_with(:file_not_found, options.verbose, :file => store_file) unless File.exists?(store_file)
+    exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
     options.default :format => 'html'
 
     presenter = {:html => Pwl::Presenter::Html, :json => Pwl::Presenter::Json, :yaml => Pwl::Presenter::Yaml}[options.format.to_sym]
     exit_with(:unknown_export_format, options.verbose, :format => options.format) if presenter.nil?
     
     begin
-      store = Pwl::Store.open(store_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
-      puts presenter.new(store).to_s
+      locker = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
+      puts presenter.new(locker).to_s
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
@@ -272,5 +272,5 @@ def get_text(prompt, gui = false)
 end
 
 def validate!(pwd)
-  Pwl::Store.password_policy.validate!(pwd)
+  Pwl::Locker.password_policy.validate!(pwd)
 end

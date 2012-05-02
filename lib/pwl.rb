@@ -7,7 +7,7 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[pwl])
 
 require 'message'
 require 'password_policy'
-require 'store'
+require 'locker'
 require 'dialog'
 require 'presenter/html'
 require 'presenter/json'

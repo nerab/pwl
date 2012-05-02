@@ -44,12 +44,12 @@
         <td colspan="2">
           This <a href="http://rdoc.info/github/nerab/pwl/master/frames">pwl</a> export was created on <%= DateTime.now.strftime('%F %R') %>.
         <br/>
-          The database at <%= store.path %> was <%= "last modified #{store.last_modified.strftime('%F %R')}" rescue 'never modified' %>.
+          The database at <%= locker.path %> was <%= "last modified #{locker.last_modified.strftime('%F %R')}" rescue 'never modified' %>.
         </td>
       </tr>
     </tfoot>
     <tbody>
-      <% store.all.each{|key, value|%>
+      <% locker.all.each{|key, value|%>
       <tr>
         <td><%= key %></td>
         <td><%= value %></td>

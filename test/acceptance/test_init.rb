@@ -13,11 +13,11 @@ class TestInit < Test::Pwl::AppTestCase
   # **************
   # Enter master password again:
   # **************
-  # Successfully initialized new store at ...
+  # Successfully initialized new locker at ...
   # $
   #
   def test_matching_passwords
-    cmd = "bin/pwl init --force --verbose --file \"#{@store_file}\""
+    cmd = "bin/pwl init --force --verbose --file \"#{@locker_file}\""
 
     PTY.spawn(cmd){|pwl_out, pwl_in, pid|
       assert_response('Enter new master password:', pwl_out)
@@ -26,7 +26,7 @@ class TestInit < Test::Pwl::AppTestCase
       assert_response('Enter master password again:', pwl_out)
       pwl_in.puts("secr3tPassw0rd")
 
-      assert_response('Successfully initialized new store', pwl_out)
+      assert_response('Successfully initialized new locker', pwl_out)
     }
   end
 
@@ -44,7 +44,7 @@ class TestInit < Test::Pwl::AppTestCase
   # $
   #
   def test_unmatching_passwords
-    cmd = "bin/pwl init --force --verbose --file \"#{store_file}\""
+    cmd = "bin/pwl init --force --verbose --file \"#{locker_file}\""
 
     PTY.spawn(cmd){|pwl_out, pwl_in, pid|
       assert_response('Enter new master password:', pwl_out)
@@ -58,14 +58,14 @@ class TestInit < Test::Pwl::AppTestCase
   end
 
   #
-  # Tests that initing an existing store without --force does not touch the existing store
+  # Tests that initing an existing locker without --force does not touch the existing locker
   #
   def test_exists
     assert_error('already exists', "init")
   end
 
   #
-  # Tests that cancelling a forced re-init does not change the store file
+  # Tests that cancelling a forced re-init does not change the locker file
   #
   def test_cancel
     # TODO

@@ -24,18 +24,18 @@ end
 module Test
   module Pwl
     class TestCase < Test::Unit::TestCase
-      attr_reader :store, :store_file
+      attr_reader :locker, :locker_file
 
       def setup
-        @store_file = temp_file_name
-        @store = ::Pwl::Store.new(@store_file, store_password)
+        @locker_file = temp_file_name
+        @locker = ::Pwl::Locker.new(@locker_file, locker_password)
       end
 
       def teardown
-        File.unlink(@store_file)
+        File.unlink(@locker_file)
       end
 
-      def store_password
+      def locker_password
         's3cret passw0rd'
       end
 
@@ -53,14 +53,14 @@ module Test
 
       protected
 
-      def assert_successful(expected_out, cmd, password = store_password)
+      def assert_successful(expected_out, cmd, password = locker_password)
         out, err, rc = execute(cmd, password)
         assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
         assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
         assert(out =~ /#{expected_out}/, "'#{out}' did not match expected response '#{expected_out}'")
       end
 
-      def assert_error(expected_err, cmd, password = store_password)
+      def assert_error(expected_err, cmd, password = locker_password)
         out, err, rc = execute(cmd, password)
         assert_not_equal(0, rc.exitstatus, "Expected non-zero exit status, but it was #{rc.exitstatus}. STDOUT was: #{out}")
         assert(out.empty?, "Expected empty STDOUT, but it yielded #{out}")
@@ -68,7 +68,7 @@ module Test
       end
 
       def execute(cmd, password)
-        Open3.capture3("echo \"#{password}\" | #{APP} #{cmd} --file \"#{store_file}\"")
+        Open3.capture3("echo \"#{password}\" | #{APP} #{cmd} --file \"#{locker_file}\"")
       end
   
       def fixture(name)

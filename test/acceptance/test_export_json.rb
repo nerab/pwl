@@ -20,7 +20,7 @@ class TestExportJSON < Test::Pwl::AppTestCase
     assert_successful_json(fixture, 'export --format json')
   end
 
-  def assert_successful_json(expected_out, cmd, password = store_password)
+  def assert_successful_json(expected_out, cmd, password = locker_password)
     out, err, rc = execute(cmd, password)
     assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
     assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
