@@ -22,6 +22,8 @@ EXIT_CODES = {
   :list_empty_filter     => Pwl::Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
   :validation_new_failed => Pwl::ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
   :unknown_export_format => Pwl::ErrorMessage.new('<%= format %> is not a known export format.', 11, :format => 'FORMAT'),
+  :inaccessible_field    => Pwl::ErrorMessage.new("Field '<%= field %>' is not accessible.", 12, :field => 'FIELD'),
+  :is_dir                => Pwl::ErrorMessage.new('File expected, but <%= file %> is a directory. Specify a regular file for the locker.', 13, :file => 'FILE'),
 }
 
 program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s.rjust(EXIT_CODES.size.to_s.size)}: #{m.to_s}"}.join("\n")
@@ -36,6 +38,12 @@ global_option '-V', '--verbose', 'Enable verbose output'
 global_option('-f', '--file FILE', 'Determine the file that holds the locker'){|file| locker_file = file}
 global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
 
+class InacessibleFieldError < StandardError
+  def initialize(field)
+    super("The field #{field} is not accessible")
+  end
+end
+
 command :init do |c|
   c.syntax = "#{program(:name)} #{c.name}"
   c.summary = 'Initializes a new locker'
@@ -44,7 +52,10 @@ command :init do |c|
   c.example "Initializes a new password locker in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
   c.option '--force', 'Force-overwrite an existing locker file'
   c.action do |args, options|
+    msg "Attempting to initialize new locker at #{locker_file}" if options.verbose
+
     # Locker checks this too, but we want to fail fast.
+    exit_with(:is_dir, options.verbose, :file => locker_file) if File.exists?(locker_file) && File.directory?(locker_file)
     exit_with(:file_exists, options.verbose, :file => locker_file) if File.exists?(locker_file) && !options.force
 
     begin
@@ -53,7 +64,7 @@ command :init do |c|
       end while begin
         validate!(master_password) # Basic idea from http://stackoverflow.com/questions/136793/is-there-a-do-while-loop-in-ruby
       rescue Pwl::InvalidMasterPasswordError => e
-        STDERR.puts e.message
+        msg e.message
         options.gui || STDIN.tty? # only continue the loop when in interactive mode
       end
 
@@ -66,12 +77,12 @@ command :init do |c|
     end
 
     Pwl::Locker.new(locker_file, master_password, {:force => options.force})
-    STDERR.puts "Successfully initialized new locker at #{locker_file}" if options.verbose
+    msg "Successfully initialized new locker at #{locker_file}" if options.verbose
   end
 end
 
 command :get do |c|
-  c.syntax = "#{program(:name)} #{c.name} NAME"
+  c.syntax = "#{program(:name)} #{c.name} NAME [FIELD]"
   c.summary = 'Retrieves the value for NAME and prints it to STDOUT.'
   c.description = 'This command retrieves the value stored under NAME and prints it on STDOUT.'
   c.example 'Reads the value stored under the name "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
@@ -80,13 +91,19 @@ command :get do |c|
     exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
     exit_with(:name_blank, options.verbose) if 0 == args.size || args[0].blank?
 
+    # second argument can be a field other than password
+    field = args.size > 1 ? args[1] : 'password'
+
     begin
-      result = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).get(args[0])
+      locker = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
+      result = attr!(locker.get(args[0]), field)
       if result.blank?
         exit_with(:no_value_found, options.verbose, :name => args[0])
       else
         puts result
       end
+    rescue InacessibleFieldError
+      exit_with(:inaccessible_field, options.verbose, :field => field)
     rescue Pwl::Dialog::Cancelled
       exit_with(:aborted, options.verbose)
     end
@@ -159,7 +176,7 @@ command :add do |c|
     end
 
     locker.add(args[0], value)
-    STDERR.puts "Successfully stored new value under #{args[0]}." if options.verbose
+    msg "Successfully stored new value under #{args[0]}." if options.verbose
   end
 end
 
@@ -179,7 +196,7 @@ command :delete do |c|
     end
 
     locker.delete(args[0])
-    STDERR.puts "Successfully deleted the value under #{args[0]}." if options.verbose
+    msg "Successfully deleted the value under #{args[0]}." if options.verbose
   end
 end
 
@@ -209,7 +226,7 @@ command :passwd do |c|
         end while begin
           validate!(new_master_password)
         rescue Pwl::InvalidMasterPasswordError => e
-          STDERR.puts e.message
+          msg e.message
           options.gui || STDIN.tty? # only continue the loop when in interactive mode
         end
 
@@ -223,7 +240,7 @@ command :passwd do |c|
     end
 
     locker.change_password!(new_master_password)
-    STDERR.puts "Successfully changed master password for #{program(:name)}." if options.verbose
+    msg "Successfully changed master password for #{program(:name)}." if options.verbose
   end
 end
 
@@ -242,7 +259,7 @@ command :export do |c|
 
     presenter = {:html => Pwl::Presenter::Html, :json => Pwl::Presenter::Json, :yaml => Pwl::Presenter::Yaml}[options.format.to_sym]
     exit_with(:unknown_export_format, options.verbose, :format => options.format) if presenter.nil?
-    
+
     begin
       locker = Pwl::Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui))
       puts presenter.new(locker).to_s
@@ -252,12 +269,16 @@ command :export do |c|
   end
 end
 
+def msg(str)
+  STDERR.puts("#{program(:name)}: #{str}")
+end
+
 def exit_with(error_code, verbose, msg_args = {})
   msg = EXIT_CODES[error_code]
   raise "No message defined for error #{error_code}" if !msg
 
   if msg.error? || verbose # always print errors; messages only when verbose
-    STDERR.puts msg.to_s(msg_args)
+    msg msg.to_s(msg_args)
   end
 
   exit(msg.exit_code)
@@ -273,4 +294,12 @@ end
 
 def validate!(pwd)
   Pwl::Locker.password_policy.validate!(pwd)
+end
+
+#
+# Returns the value of the passed attribute name if it is allowed to be retrieved from a locker entry
+#
+def attr!(entry, field)
+  raise InacessibleFieldError.new(field) unless entry.instance_variable_defined?("@#{field}".to_sym)
+  entry.send(field)
 end

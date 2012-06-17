@@ -3,7 +3,21 @@ require 'helper'
 class TestLockerCRUD < Test::Pwl::TestCase
   def test_add_get
     locker.add('foo', 'bar')
-    assert_equal('bar', locker.get('foo'))
+    assert_equal('bar', locker.get('foo').password)
+  end
+
+  def test_add_entry
+    name = 'foo'
+    password = 'bar'
+
+    entry = Pwl::Entry.new
+    entry.name = name
+    entry.password = password
+    locker.add(entry)
+
+    entry = locker.get(name)
+    assert_not_nil(entry)
+    assert_equal(password, entry.password)
   end
 
   def test_get_blank
@@ -17,11 +31,11 @@ class TestLockerCRUD < Test::Pwl::TestCase
   end
 
   def test_add_get_blank
-    assert_raise Pwl::Locker::BlankValueError do
+    assert_raise Pwl::InvalidEntryError do
       locker.add('empty', '')
     end
 
-    assert_raise Pwl::Locker::BlankValueError do
+    assert_raise Pwl::InvalidEntryError do
       locker.add('nil', nil)
     end
   end
@@ -41,16 +55,16 @@ class TestLockerCRUD < Test::Pwl::TestCase
     test_vector.each{|k,v| locker.add(k, v)}
     assert_equal(test_vector.keys, locker.list)
     locker.list.each{|key|
-      assert_equal(test_vector[key], locker.get(key))
+      assert_equal(test_vector[key], locker.get(key).password)
     }
   end
 
   def test_all
     test_vector = Hash['foo', 'one', 'bar', 'two', 'Chuck Norris', 'Roundhouse Kick']
     test_vector.each{|k,v| locker.add(k, v)}
-    assert_equal(test_vector, locker.all)
-    locker.all.each{|k,v|
-      assert_equal(test_vector[k], v)
+    assert_present(locker.all)
+    locker.all.each{|entry|
+      assert_equal(test_vector[entry.name], entry.password)
     }
   end
 
@@ -62,16 +76,16 @@ class TestLockerCRUD < Test::Pwl::TestCase
     expected = test_vector.keys.select{|k,v| k =~ /#{filter}/}
     assert_equal(expected, locker.list(filter))
   end
-  
+
   def test_delete
     locker.add('foo', 'bar')
-    assert_equal('bar', locker.delete('foo'))
-    
+    assert_equal('bar', locker.delete('foo').password)
+
     assert_raise Pwl::Locker::KeyNotFoundError do
       locker.get('foo')
     end
   end
-  
+
   def test_delete_blank
     assert_raise Pwl::Locker::BlankKeyError do
       locker.delete('')

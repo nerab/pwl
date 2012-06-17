@@ -5,7 +5,7 @@ class TestList < Test::Pwl::AppTestCase
   def test_list_empty
     assert_empty(locker.list)
     assert_error('^$', 'list')
-    assert_error('^List is empty\.$', 'list --verbose')
+    assert_error('^pwl: List is empty\.$', 'list --verbose')
   end
 
   def test_list_all

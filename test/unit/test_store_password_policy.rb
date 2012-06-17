@@ -50,7 +50,7 @@ class TestLockerPasswordPolicy < Test::Pwl::TestCase
   def assert_valid(password)
     locker = ::Pwl::Locker.new(@locker_file, password)
     locker.add('foo', 'bar')
-    assert_equal('bar', locker.get('foo'))
+    assert_equal('bar', locker.get('foo').password)
   end
 
   def assert_invalid(password)

@@ -8,6 +8,8 @@ $:.unshift File.join(File.dirname(__FILE__), *%w[pwl])
 require 'message'
 require 'password_policy'
 require 'locker'
+require 'entry'
+require 'entry_mapper'
 require 'dialog'
 require 'presenter/html'
 require 'presenter/json'

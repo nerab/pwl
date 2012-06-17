@@ -3,9 +3,12 @@
 :last_accessed: '2012-03-28T22:01:49+02:00'
 :last_modified: '2012-03-29T22:46:29+02:00'
 :entries:
-- :key: foo
+- :uuid: mock-uuid
+  :key: foo
   :value: one
-- :key: bar
+- :uuid: mock-uuid
+  :key: bar
   :value: two
-- :key: Chuck Norris
+- :uuid: mock-uuid
+  :key: Chuck Norris
   :value: Roundhouse Kick

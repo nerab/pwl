@@ -4,16 +4,19 @@
   "last_modified": "2012-03-29T22:46:29+02:00",
   "entries": [
     {
-      "key": "foo",
-      "value": "one"
+      "uuid": "mock-uuid",
+      "name": "foo",
+      "password": "one"
     },
     {
-      "key": "bar",
-      "value": "two"
+      "uuid": "mock-uuid",
+      "name": "bar",
+      "password": "two"
     },
     {
-      "key": "Chuck Norris",
-      "value": "Roundhouse Kick"
+      "uuid": "mock-uuid",
+      "name": "Chuck Norris",
+      "password": "Roundhouse Kick"
     }
   ]
 }

@@ -17,7 +17,7 @@ class TestInit < Test::Pwl::AppTestCase
   # $
   #
   def test_matching_passwords
-    cmd = "bin/pwl init --force --verbose --file \"#{@locker_file}\""
+    cmd = "bin/pwl init --force --verbose --file \"#{locker_file}\""
 
     PTY.spawn(cmd){|pwl_out, pwl_in, pid|
       assert_response('Enter new master password:', pwl_out)
@@ -54,6 +54,26 @@ class TestInit < Test::Pwl::AppTestCase
       pwl_in.puts("secr3tPassw0rd")
 
       assert_response('Passwords do not match\.', pwl_out)
+    }
+  end
+
+  #
+  # Tests that initing with a directory argument fail.
+  #
+  # A session is expected to look like this:
+  #
+  # $ bin/pwl init --file /tmp
+  # pwl: File expected, but /tmp is a directory. Specify a regular file for the locker.
+  # $
+  #
+  def test_locker_existing_dir
+    dir = File.dirname(locker_file)
+    assert(File.directory?(dir))
+
+    cmd = "bin/pwl init --file \"#{dir}\""
+
+    PTY.spawn(cmd){|pwl_out, pwl_in, pid|
+      assert_response("pwl: File expected, but #{dir} is a directory. Specify a regular file for the locker.", pwl_out)
     }
   end
 

@@ -49,10 +49,10 @@
       </tr>
     </tfoot>
     <tbody>
-      <% locker.all.each{|key, value|%>
-      <tr>
-        <td><%= key %></td>
-        <td><%= value %></td>
+      <% locker.all.each{|entry|%>
+      <tr id="<%= entry.uuid %>">
+        <td><%= entry.name %></td>
+        <td><%= entry.password %></td>
       </tr>
       <% } %>
     </tbody>

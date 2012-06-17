@@ -13,10 +13,10 @@ class TestExportYAML < Test::Pwl::AppTestCase
     test_vector.each{|k,v|
       assert_successful('', "add '#{k}' '#{v}'")
     }
-    
+
     now = DateTime.now.strftime('%F %R')
     fixture = fixture("test_all.yaml")
-    
+
     assert_successful_yaml(fixture, 'export --format yaml')
   end
 
@@ -27,22 +27,25 @@ class TestExportYAML < Test::Pwl::AppTestCase
 
     actual   = YAML.load(out)
     expected = YAML.load(expected_out)
-    
+
     # fix up actuals to match expectations
     actual[:created] = "2012-03-28T21:54:21+02:00"
     actual[:last_accessed] = "2012-03-28T22:01:49+02:00"
     actual[:last_modified] = "2012-03-29T22:46:29+02:00"
+    actual[:entries].each do |entry|
+      entry[:uuid] = 'mock-uuid'
+    end
 
     # This is essentially the same as
     #   assert_equal(expected, actual)
     # but it provides better diagnostic output on error
     yaml_diff(expected, actual)
   end
-  
+
   private
   def yaml_diff(expected, actual, context = nil)
     #assert_equal(expected.class, actual.class)
-    
+
     case expected
     when Hash
       actual.keys.each do |key|

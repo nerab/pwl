@@ -16,9 +16,11 @@ $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'pwl'
 require 'tmpdir'
+require 'active_support/testing/assertions'
 
 class Test::Unit::TestCase
   FIXTURES_DIR = File.join(File.dirname(__FILE__), 'fixtures')
+  include ActiveSupport::Testing::Assertions
 end
 
 module Test
@@ -55,7 +57,7 @@ module Test
 
       def assert_successful(expected_out, cmd, password = locker_password)
         out, err, rc = execute(cmd, password)
-        assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
+        assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}. Command was '#{cmd}''")
         assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
         assert(out =~ /#{expected_out}/, "'#{out}' did not match expected response '#{expected_out}'")
       end
@@ -70,7 +72,7 @@ module Test
       def execute(cmd, password)
         Open3.capture3("echo \"#{password}\" | #{APP} #{cmd} --file \"#{locker_file}\"")
       end
-  
+
       def fixture(name)
         File.read(File.join(FIXTURES_DIR, name))
       end

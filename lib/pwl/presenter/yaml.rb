@@ -13,9 +13,13 @@ module Pwl
         result[:last_accessed] = @locker.last_accessed.to_s
         result[:last_modified] = @locker.last_modified.to_s
         result[:entries] = []
-        @locker.all.each{|entry|
-          result[:entries] << {:key => entry.first, :value => entry.last}
-        }
+        @locker.all.each do |entry|
+          result[:entries] << {
+            :uuid => entry.uuid,
+            :key => entry.name,
+            :value => entry.password
+          }
+        end
         result.to_yaml
       end
     end

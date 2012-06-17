@@ -13,10 +13,10 @@ class TestExport < Test::Pwl::AppTestCase
     test_vector.each{|k,v|
       assert_successful('', "add '#{k}' '#{v}'")
     }
-    
+
     now = DateTime.now.strftime('%F %R')
     fixture = fixture("test_all.html").gsub('CREATED_STAMP', now).gsub('MODIFIED_STAMP', now).gsub('DATABASE_FILE', locker_file)
-    
+
     assert_successful_html(fixture, 'export')
   end
 
@@ -25,10 +25,13 @@ class TestExport < Test::Pwl::AppTestCase
     assert_equal(0, rc.exitstatus, "Expected exit status 0, but it was #{rc.exitstatus}. STDERR was: #{err}")
     assert(err.empty?, "Expected empty STDERR, but it yielded #{err}")
 
+    # ignore generated UUIDs, but insist on format
+    out.gsub!(/id=\"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}\"/, 'id="mock-uuid"')
+
     actual   = Nokogiri::HTML(out)
     expected = Nokogiri::HTML(expected_out)
 
-    differences = actual.diff(expected, :added => true, :removed => true)
+    differences = expected.diff(actual, :added => true, :removed => true)
 
     assert_equal(0, differences.count, "Unexpected differences in output. Diff:\n" << differences.collect{|change, node|
       case change

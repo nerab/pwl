@@ -133,19 +133,26 @@ module Pwl
         timestamp!(:last_accessed)
         value = @backend[:user][encrypt(key)]
         raise KeyNotFoundError.new(key) unless value
-        decrypt(value)
+        EntryMapper.from_json(decrypt(value))
       }
     end
 
     #
-    # Store value stored under key
+    # Store entry or value under key
     #
-    def add(key, value)
-      raise BlankKeyError if key.blank?
-      raise BlankValueError if value.blank?
+    def add(entry_or_key, value = nil)
+      if value.nil? and entry_or_key.is_a?(Entry) # treat as entry
+        entry = entry_or_key
+      else
+        entry = Entry.new(entry_or_key)
+        entry.password = value
+      end
+
+      entry.validate!
+
       @backend.transaction{
         timestamp!(:last_modified)
-        @backend[:user][encrypt(key)] = encrypt(value)
+        @backend[:user][encrypt(entry.name)] = encrypt(EntryMapper.to_json(entry))
       }
     end
 
@@ -158,7 +165,7 @@ module Pwl
         timestamp!(:last_modified)
         old_value = @backend[:user].delete(encrypt(key))
         raise KeyNotFoundError.new(key) unless old_value
-        decrypt(old_value)
+        EntryMapper.from_json(decrypt(old_value))
       }
     end
 
@@ -178,12 +185,12 @@ module Pwl
     end
 
     #
-    # Return all entries
+    # Return all entries as array
     #
     def all
-      result = {}
+      result = []
       @backend.transaction(true){
-        @backend[:user].each{|k,v| result[decrypt(k)] = decrypt(v)}
+        @backend[:user].each{|k,v| result << EntryMapper.from_json(decrypt(v))}
       }
       result
     end
@@ -199,6 +206,7 @@ module Pwl
         # Decrypt each key and value with the old master password and encrypt them with the new master password
         copy = {}
         @backend[:user].each{|k,v|
+          # No need to (de)serialize - the value comes in as JSON and goes out as JSON
           new_key = Encryptor.encrypt(decrypt(k), :key => new_master_password)
           new_val = Encryptor.encrypt(decrypt(v), :key => new_master_password)
           copy[new_key] = new_val

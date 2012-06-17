@@ -20,6 +20,7 @@ class TestLockerSecurity < Test::Pwl::TestCase
   def test_change_password
     assert(!locker.nil?, "Locker expected, but it is nil")
     locker.add('Homer', 'Simpson')
+    assert_equal('Simpson', locker.get('Homer').password)
     locker.change_password!(locker_password.reverse)
 
     # the old password must not work anymore
@@ -29,6 +30,6 @@ class TestLockerSecurity < Test::Pwl::TestCase
 
     # Read back with the changed password
     reopened = Pwl::Locker.open(locker_file, locker_password.reverse)
-    assert_equal('Simpson', reopened.get('Homer'))
+    assert_equal('Simpson', reopened.get('Homer').password)
   end
 end

@@ -1,5 +1,3 @@
-require 'jbuilder'
-
 module Pwl
   module Presenter
     class Json
@@ -8,14 +6,12 @@ module Pwl
       end
 
       def to_s
-        Jbuilder.encode do |json|
-          json.(@locker, :created, :last_accessed, :last_modified)
-
-          json.entries @locker.all do |json, entry|
-            json.key entry.first
-            json.value entry.last
-          end
+        result = {}
+        %w[created last_accessed last_modified].each do |attr|
+          result.store(attr.to_sym, @locker.send(attr))
         end
+        result[:entries] = @locker.all.collect{|e| {:uuid => e.uuid, :name => e.name, :password => e.password}}
+        result.to_json
       end
     end
   end
