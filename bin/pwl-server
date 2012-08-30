@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+
+# TODO Allow for config
+# TODO Use http://daemons.rubyforge.org/ or https://github.com/bazaarlabs/dante
+
+require 'pwl'
+require 'drb'
+require 'drb/acl'
+require 'date'
+
+DRb.install_acl(ACL.new(%w[
+  allow localhost
+]))
+
+DRb.start_service 'druby://localhost:52296', Pwl::Server.new('/tmp/pwl-server.pstore')
+$stderr.puts "#{DateTime.now} - Starting server at #{DRb.uri}"
+DRb.thread.join

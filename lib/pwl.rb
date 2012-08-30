@@ -14,6 +14,7 @@ require 'dialog'
 require 'presenter/html'
 require 'presenter/json'
 require 'presenter/yaml'
+require 'server'
 
 module Pwl
   VERSION = File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION]))
