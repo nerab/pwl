@@ -1,0 +1,40 @@
+#!/usr/bin/env ruby
+
+# TODO Move this into the main bin script
+
+require 'pwl'
+require 'drb'
+require 'highline'
+
+def log(error)
+  $stderr.puts "#{File.basename($0)}: #{error.message}"
+end
+
+def die(error)
+  log(error)
+  exit(1)
+end
+
+DRb.start_service
+server = DRbObject.new nil, 'druby://localhost:52296'
+
+jar = File.expand_path('~/.pwl.session')
+
+begin
+  # TODO Use server.locker where the bin script uses the locker alone
+  server.locker(File.read(jar)).all.each{|e| puts "#{e.name}:#{e.password}"}
+rescue Pwl::InvalidSessionError, Errno::ENOENT
+  log($!)
+
+  begin
+    File.open(jar, 'w'){|f| f.write(server.login(HighLine.new.ask("Enter master password for locker:"){|q| q.echo = '*'}))}
+  rescue Interrupt
+    exit(1) # silently exit
+  rescue
+    die($!)
+  end
+
+  retry
+rescue DRb::DRbConnError
+  die($!)
+end
