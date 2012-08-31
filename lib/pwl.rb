@@ -15,6 +15,15 @@ require 'presenter/html'
 require 'presenter/json'
 require 'presenter/yaml'
 
+require 'commands/base'
+require 'commands/add'
+require 'commands/delete'
+require 'commands/export'
+require 'commands/get'
+require 'commands/init'
+require 'commands/list'
+require 'commands/passwd'
+
 module Pwl
   VERSION = File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION]))
 end
