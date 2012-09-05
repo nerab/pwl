@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "pwl"
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Nicholas E. Rabenau"]
-  s.date = "2012-05-02"
+  s.date = "2012-09-05"
   s.description = "pwl is a secure password locker for the commandline"
   s.email = "nerab@gmx.net"
   s.executables = ["pwl", "pwl"]
@@ -28,11 +28,22 @@ Gem::Specification.new do |s|
     "VERSION",
     "bin/pwl",
     "lib/pwl.rb",
+    "lib/pwl/commands/add.rb",
+    "lib/pwl/commands/base.rb",
+    "lib/pwl/commands/delete.rb",
+    "lib/pwl/commands/export.rb",
+    "lib/pwl/commands/get.rb",
+    "lib/pwl/commands/init.rb",
+    "lib/pwl/commands/list.rb",
+    "lib/pwl/commands/passwd.rb",
+    "lib/pwl/commands/stats.rb",
     "lib/pwl/dialog.rb",
     "lib/pwl/dialog/base.rb",
     "lib/pwl/dialog/cocoa.rb",
     "lib/pwl/dialog/console.rb",
     "lib/pwl/dialog/gnome.rb",
+    "lib/pwl/entry.rb",
+    "lib/pwl/entry_mapper.rb",
     "lib/pwl/locker.rb",
     "lib/pwl/message.rb",
     "lib/pwl/password_policy.rb",
@@ -59,6 +70,8 @@ Gem::Specification.new do |s|
     "test/fixtures/test_empty.json",
     "test/fixtures/test_empty.yaml",
     "test/helper.rb",
+    "test/unit/test_entry.rb",
+    "test/unit/test_entry_mapper.rb",
     "test/unit/test_error.rb",
     "test/unit/test_message.rb",
     "test/unit/test_store_construction.rb",
@@ -80,16 +93,20 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<encryptor>, ["~> 1.1"])
       s.add_runtime_dependency(%q<commander>, ["~> 4.1"])
       s.add_runtime_dependency(%q<activesupport>, ["~> 3.2"])
-      s.add_runtime_dependency(%q<jbuilder>, ["~> 0.4"])
+      s.add_runtime_dependency(%q<activemodel>, ["~> 3.2"])
+      s.add_runtime_dependency(%q<uuid>, ["~> 2.3"])
       s.add_development_dependency(%q<rdoc>, ["~> 3.1"])
+      s.add_development_dependency(%q<pry>, [">= 0"])
       s.add_development_dependency(%q<bundler>, ["~> 1.1"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.8"])
     else
       s.add_dependency(%q<encryptor>, ["~> 1.1"])
       s.add_dependency(%q<commander>, ["~> 4.1"])
       s.add_dependency(%q<activesupport>, ["~> 3.2"])
-      s.add_dependency(%q<jbuilder>, ["~> 0.4"])
+      s.add_dependency(%q<activemodel>, ["~> 3.2"])
+      s.add_dependency(%q<uuid>, ["~> 2.3"])
       s.add_dependency(%q<rdoc>, ["~> 3.1"])
+      s.add_dependency(%q<pry>, [">= 0"])
       s.add_dependency(%q<bundler>, ["~> 1.1"])
       s.add_dependency(%q<jeweler>, ["~> 1.8"])
     end
@@ -97,8 +114,10 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<encryptor>, ["~> 1.1"])
     s.add_dependency(%q<commander>, ["~> 4.1"])
     s.add_dependency(%q<activesupport>, ["~> 3.2"])
-    s.add_dependency(%q<jbuilder>, ["~> 0.4"])
+    s.add_dependency(%q<activemodel>, ["~> 3.2"])
+    s.add_dependency(%q<uuid>, ["~> 2.3"])
     s.add_dependency(%q<rdoc>, ["~> 3.1"])
+    s.add_dependency(%q<pry>, [">= 0"])
     s.add_dependency(%q<bundler>, ["~> 1.1"])
     s.add_dependency(%q<jeweler>, ["~> 1.8"])
   end
