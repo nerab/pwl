@@ -1,5 +1,3 @@
-require 'commander/import'
-
 module Pwl
   module Commands
     EXIT_CODES = {
@@ -14,19 +12,10 @@ module Pwl
       :list_empty            => Message.new('List is empty.', 8),
       :list_empty_filter     => Message.new('No names found that match filter <%= filter %>.', 9, :filter => 'FILTER'),
       :validation_new_failed => ErrorMessage.new('<%= message %>.', 10, :message => 'Validation of new master password failed'),
-      :unknown_export_format => ErrorMessage.new('<%= format %> is not a known export format.', 11, :format => 'FORMAT'),
+      :unknown_format        => ErrorMessage.new('<%= format %> is not a known format.', 11, :format => 'FORMAT'),
       :inaccessible_field    => ErrorMessage.new("Field '<%= field %>' is not accessible.", 12, :field => 'FIELD'),
       :is_dir                => ErrorMessage.new('File expected, but <%= file %> is a directory. Specify a regular file for the locker.', 13, :file => 'FILE'),
     }
-
-    program :version, VERSION
-    program :description, "#{program(:name)} is a secure password locker for the command line."
-    program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s.rjust(EXIT_CODES.size.to_s.size)}: #{m.to_s}"}.join("\n")
-    program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
-
-    global_option '-V', '--verbose', 'Enable verbose output'
-    global_option('-f', '--file FILE', 'Determine the file that holds the locker'){|file| locker_file = file}
-    global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
 
     class InacessibleFieldError < StandardError
       def initialize(field)
@@ -35,13 +24,31 @@ module Pwl
     end
 
     class Base
-      def initialize
-        @locker_file = File.expand_path("~/.#{program(:name)}.pstore")
+      class << self
+        def exit_codes_help
+          EXIT_CODES.values.sort{|l,r| l.exit_code <=> r.exit_code}.collect{|m| "      #{m.exit_code.to_s.rjust(EXIT_CODES.size.to_s.size)}: #{m.to_s}"}.join("\n")
+        end
+
+        def default_locker_file
+          File.expand_path("~/.#{program(:name)}.pstore")
+        end
       end
 
     protected
 
-      attr_accessor :locker_file
+      def locker_file(options)
+        options.file || self.class.default_locker_file
+      end
+
+      def open_locker(options, master_password)
+        # TODO Use DRb at options.url if not nil
+        Locker.open(locker_file(options), master_password)
+      end
+
+      def new_locker(options, master_password)
+        # Remote init not allowed. Or maybe it should be?
+        Locker.new(locker_file(options), master_password, {:force => options.force})
+      end
 
       def msg(str)
         STDERR.puts("#{program(:name)}: #{str}")

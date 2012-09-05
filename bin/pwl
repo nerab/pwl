@@ -4,12 +4,91 @@ require 'rubygems'
 
 $:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
 
+require 'commander/import'
 require 'pwl'
+include Pwl::Commands
 
-Pwl::Commands::Add.new
-Pwl::Commands::Delete.new
-Pwl::Commands::Export.new
-Pwl::Commands::Get.new
-Pwl::Commands::Init.new
-Pwl::Commands::List.new
-Pwl::Commands::Passwd.new
+program :version, Pwl::VERSION
+program :description, "#{program(:name)} is a secure password locker for the command line."
+program :help, 'Exit Status',  "#{program(:name)} sets the following exit status:\n\n" + Pwl::Commands::Base.exit_codes_help
+program :help, 'Author', 'Nicholas E. Rabenau <nerab@gmx.at>'
+
+global_option '-V', '--verbose', 'Enable verbose output'
+global_option('-f', '--file FILE', 'Determine the file that holds the locker')
+global_option '-g', '--gui', 'Request the master password using an OS-specific GUI dialog. This option takes precedence over STDIN.'
+
+command :add do |c|
+  c.syntax = "#{program(:name)} #{c.name} NAME [VALUE]"
+  c.summary = 'Stores VALUE under NAME'
+  c.description = 'Adds or updates the entry stored under NAME. If NAME is already present in the locker, it will be updated with VALUE. If NAME is not already present in the locker, a new entry will be created. If VALUE is not given, it will be read from STDIN.'
+  c.example 'Stores the value "bar" under the name "foo"', "#{program(:name)} #{c.name} foo bar"
+  c.example 'Reads STDIN and stores that as value under the name "foo"', "#{program(:name)} #{c.name} foo"
+  c.action Add.new
+end
+
+command :delete do |c|
+  c.syntax = "#{program(:name)} #{c.name} NAME"
+  c.summary = 'Deletes the entry stored under NAME'
+  c.description = 'Deletes the complete entry that is stored under NAME. If NAME is not present in the locker, an error will thrown.'
+  c.example 'Deletes what was stored under the name "foo"', "#{program(:name)} #{c.name} foo"
+  c.action Delete.new
+end
+
+command :export do |c|
+  c.syntax = "#{program(:name)} #{c.name}"
+  c.summary = 'Exports all entries.'
+  c.description = 'This command prints all entries to STDOUT.'
+  c.example 'Prints all entries', "#{program(:name)} #{c.name}"
+  c.option '--format FORMAT', String, 'Specify export format. Default is html.'
+  c.example 'Prints all entries in HTML format (default)', "#{program(:name)} #{c.name} --format html"
+  c.example 'Prints all entries in JSON format', "#{program(:name)} #{c.name} --format json"
+  c.example 'Prints all entries in YAML format', "#{program(:name)} #{c.name} --format yaml"
+  c.action Export.new
+end
+
+command :get do |c|
+  c.syntax = "#{program(:name)} #{c.name} NAME [FIELD]"
+  c.summary = 'Retrieves the value for NAME and prints it to STDOUT.'
+  c.description = 'This command retrieves the value stored under NAME and prints it on STDOUT.'
+  c.example 'Reads the value stored under the name "foo" and prints it to STDOUT', "#{program(:name)} #{c.name} foo"
+  c.action Get.new
+end
+
+command :init do |c|
+  c.syntax = "#{program(:name)} #{c.name}"
+  c.summary = 'Initializes a new locker'
+  c.description = 'This command initializes a new password locker. Password quality is enforced using validation rules.'
+  c.example "Initializes a new password locker in #{Base.default_locker_file}", "#{program(:name)} #{c.name}"
+  c.example "Initializes a new password locker in /tmp/crackme.txt", "#{program(:name)} #{c.name} --file /tmp/crackme.txt"
+  c.option '--force', 'Force-overwrite an existing locker file'
+  c.action Init.new
+end
+
+command :list do |c|
+  c.syntax = "#{program(:name)} #{c.name} [FILTER]"
+  c.summary = 'Lists all names with optional FILTER.'
+  c.description = 'This command prints all names to STDOUT. If present, only those names matching FILTER will be returned.'
+  c.example 'Prints all names', "#{program(:name)} #{c.name}"
+  c.example 'Prints all names which start with "foo"', "#{program(:name)} #{c.name} foo"
+  c.example 'Prints all names separated by comma', "#{program(:name)} #{c.name} --separator ,"
+  c.option '-s', '--separator SEPARATOR', String, 'Separate names by SEPARATOR'
+  c.action List.new
+end
+
+command :passwd do |c|
+  c.syntax = "#{program(:name)} #{c.name} [NEW_MASTER_PASSWORD]"
+  c.summary = 'Changes the master password to NEW_MASTER_PASSWORD.'
+  c.description = 'This command changes the master password of the locker. Password quality is enforced using validation rules.'
+  c.action Passwd.new
+end
+
+command :stats do |c|
+  c.syntax = "#{program(:name)} #{c.name}"
+  c.summary = 'Provides simple statistics'
+  c.description = 'This command provides basic statistical information about a password locker.'
+  c.option '--format [FORMAT]', String, 'Specify format. If this option is not present, text format is assumed.'
+  c.example 'Prints stats in HTML format (default)', "#{program(:name)} #{c.name} --format html"
+  c.example 'Prints stats in JSON format', "#{program(:name)} #{c.name} --format json"
+  c.example 'Prints stats in YAML format', "#{program(:name)} #{c.name} --format yaml"
+  c.action Stats.new
+end

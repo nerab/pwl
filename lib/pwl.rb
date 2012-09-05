@@ -23,6 +23,7 @@ require 'commands/get'
 require 'commands/init'
 require 'commands/list'
 require 'commands/passwd'
+require 'commands/stats'
 
 module Pwl
   VERSION = File.read(File.join(File.dirname(__FILE__), *%w[.. VERSION]))

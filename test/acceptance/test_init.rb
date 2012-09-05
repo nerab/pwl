@@ -93,9 +93,9 @@ class TestInit < Test::Pwl::AppTestCase
 
   private
 
-  def assert_response(expected, actual_io)
-    if !actual_io.expect(/#{expected}/, 1)
-      raise StandardError.new("Expected response '#{expected}' was not matched")
+  def assert_response(expected, actual_io, timeout = 5)
+    if !actual_io.expect(/#{expected}/, timeout)
+      raise StandardError.new("Expected response '#{expected}' was not found within timeout of #{timeout} seconds.")
     end
   end
 end
