@@ -37,10 +37,12 @@ module Pwl
     protected
 
       def locker_file(options)
-        options.file || self.class.default_locker_file
+        result = options.file || self.class.default_locker_file
+        exit_with(:file_not_found, options.verbose, :file => result) unless File.exists?(result)
+        result
       end
 
-      def open_locker(options, master_password)
+      def open_locker(options, master_password = get_password("Enter the master password for #{program(:name)}:", options.gui))
         # TODO Use DRb at options.url if not nil
         Locker.open(locker_file(options), master_password)
       end

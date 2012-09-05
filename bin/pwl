@@ -67,11 +67,12 @@ end
 command :list do |c|
   c.syntax = "#{program(:name)} #{c.name} [FILTER]"
   c.summary = 'Lists all names with optional FILTER.'
-  c.description = 'This command prints all names to STDOUT. If present, only those names matching FILTER will be returned.'
+  c.description = 'This command prints all names to STDOUT. If FILTER is present, only matching names will be printed.'
+  c.option '--long', 'List in long format.'
   c.example 'Prints all names', "#{program(:name)} #{c.name}"
   c.example 'Prints all names which start with "foo"', "#{program(:name)} #{c.name} foo"
   c.example 'Prints all names separated by comma', "#{program(:name)} #{c.name} --separator ,"
-  c.option '-s', '--separator SEPARATOR', String, 'Separate names by SEPARATOR'
+  c.option '-s', '--separator SEPARATOR', String, 'Separate names by SEPARATOR. Not applicable in long format.'
   c.action List.new
 end
 

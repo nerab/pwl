@@ -2,13 +2,24 @@ module Pwl
   module Commands
     class List < Base
       def call(args, options)
-        # Locker checks this too, but we want to fail fast and provide a message.
-        exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
-
         options.default :separator => ' '
 
         begin
-          result = Locker.open(locker_file, get_password("Enter the master password for #{program(:name)}:", options.gui)).list(args[0]).join(options.separator)
+          locker = open_locker(options)
+
+          if !options.long
+            result = locker.list(args[0]).join(options.separator)
+          else
+            matching_names = locker.list(args[0])
+
+            result = "total #{matching_names.size}#{$/}"
+
+            matching_names.each do |name|
+              e = locker.get(name)
+              result << "#{e.uuid}\t#{e.name}#{$/}"
+            end
+          end
+
           if !result.blank?
             puts result
           else

@@ -32,7 +32,7 @@ module Pwl
 
     class Stats < Base
       def call(args, options)
-        locker = open_locker(options, get_password("Enter the master password for #{program(:name)}:", options.gui))
+        locker = open_locker(options)
 
         begin
           puts presenter(options.format).present(locker)

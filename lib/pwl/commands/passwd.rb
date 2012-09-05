@@ -2,10 +2,8 @@ module Pwl
   module Commands
     class Passwd < Base
       def call(args, options)
-        exit_with(:file_not_found, options.verbose, :file => locker_file) unless File.exists?(locker_file)
-
         begin
-          locker = Pwl::Locker.open(locker_file, get_password("Enter the current master password for #{program(:name)}:", options.gui))
+          locker = open_locker(options)
 
           if !STDIN.tty? && !options.gui
             # If we are in a pipe and do not run in GUI mode, we accept the new master password as args[0]
