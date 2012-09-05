@@ -2,11 +2,12 @@ module Pwl
   module Commands
     class Init < Base
       def call(args, options)
+        locker_file = locker_file(options, true)
         msg "Attempting to initialize new locker at #{locker_file}" if options.verbose
 
         # Locker checks this too, but we want to fail fast.
-        exit_with(:is_dir, options.verbose, :file => locker_file(options)) if File.exists?(locker_file(options)) && File.directory?(locker_file(options))
-        exit_with(:file_exists, options.verbose, :file => locker_file(options)) if File.exists?(locker_file(options)) && !options.force
+        exit_with(:is_dir, options.verbose, :file => locker_file) if File.exists?(locker_file) && File.directory?(locker_file)
+        exit_with(:file_exists, options.verbose, :file => locker_file) if File.exists?(locker_file) && !options.force
 
         begin
           begin

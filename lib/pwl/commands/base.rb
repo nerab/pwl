@@ -36,20 +36,27 @@ module Pwl
 
     protected
 
-      def locker_file(options)
+      def locker_file(options, init = false)
         result = options.file || self.class.default_locker_file
-        exit_with(:file_not_found, options.verbose, :file => result) unless File.exists?(result)
-        result
+
+        if File.exists?(result) || init
+          result
+        else
+          exit_with(:file_not_found, options.verbose, :file => result)
+        end
       end
 
-      def open_locker(options, master_password = get_password("Enter the master password for #{program(:name)}:", options.gui))
+      def open_locker(options, master_password = nil)
         # TODO Use DRb at options.url if not nil
-        Locker.open(locker_file(options), master_password)
+        locker_file = locker_file(options)
+        msg "Attempting to open locker at #{locker_file}" if options.verbose
+
+        Locker.open(locker_file, master_password || get_password("Enter the master password for #{program(:name)}:", options.gui))
       end
 
       def new_locker(options, master_password)
         # Remote init not allowed. Or maybe it should be?
-        Locker.new(locker_file(options), master_password, {:force => options.force})
+        Locker.new(locker_file(options, true), master_password, {:force => options.force})
       end
 
       def msg(str)
