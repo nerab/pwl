@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-
-$:.unshift File.join(File.dirname(__FILE__), *%w[.. lib])
+require 'bundler'
+Bundler.require
 
 require 'commander/import'
 require 'pwl'
