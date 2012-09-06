@@ -15,18 +15,20 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Pwl::VERSION
 
-  gem.add_runtime_dependency 'activesupport', '~> 3.2'
-  gem.add_runtime_dependency 'activemodel', '~> 3.2'
-  gem.add_runtime_dependency 'encryptor', '~> 1.1'
-  gem.add_runtime_dependency 'commander', '~> 4.1'
-  gem.add_runtime_dependency 'uuid', '~> 2.3'
+  gem.add_runtime_dependency 'activesupport'
+  gem.add_runtime_dependency 'activemodel'
+  gem.add_runtime_dependency 'encryptor'
+  gem.add_runtime_dependency 'commander'
+  gem.add_runtime_dependency 'uuid'
+  gem.add_runtime_dependency 'require_all'
 
-  gem.add_development_dependency 'guard-minitest', '~> 0.5'
-  gem.add_development_dependency 'guard-bundler', '~> 1.0'
-  gem.add_development_dependency 'coolline', '~> 0.3'
+  gem.add_development_dependency 'guard-minitest'
+  gem.add_development_dependency 'guard-bundler'
+  gem.add_development_dependency 'coolline'
   gem.add_development_dependency 'growl'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'pry'
-  gem.add_development_dependency 'simplecov', '~> 0.6', :require => false
-  gem.add_development_dependency 'nokogiri-diff', '~> 0.1'
+  gem.add_development_dependency 'simplecov'
+  gem.add_development_dependency 'nokogiri', '~> 1.4'
+  gem.add_development_dependency 'nokogiri-diff'
 end
